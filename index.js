@@ -6,12 +6,27 @@ const sequelize = new Sequelize(path, {
     operators: false
 });
 const cors = require('cors');
+
+const expressJwt = require('express-jwt')
+const jwtClave = 'Pr0y3CtO_4caWik';
 require('dotenv').config();
+const jwt = require('jsonwebtoken');
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-///////////////////////////////////////////ENDPOINTS USUARIOS//////////////////////////////////////////
+//Middleware que solicita contraseña de administrador en todos los endpoint excepto en /usuarios
+app.use(expressJwt({ secret: jwtClave, algorithms: ['sha1', 'RS256', 'HS256'] }).unless({ path: ["/productos", "/login", "/nuevo_pedido"] }));
+
+app.use(function (err, req, res, next){
+    if(err.name == 'UnauthorizedError'){
+        res.status(401).send({status:'error 401', mensaje:'no tienes autorizacion para realizar esta accion'})
+    }
+    next();
+})
+
+
+
 
 let verificar_si_existe = (req, res, next)=>{
     let usuario = req.body.usuario;
@@ -67,6 +82,13 @@ async function buscar_usuario(usuario) {
     });
     return resultado;
 }
+async function login (usuario, contrasena) {
+    let resultado = await sequelize.query('SELECT * FROM usuarios WHERE usuario = ? AND contraseña = ?', {
+        replacements: [usuario, contrasena],
+        type: sequelize.QueryTypes.SELECT
+    });
+    return resultado;
+}
 
 async function buscar_todos_los_usuarios() {
     let resultado = await sequelize.query("SELECT * FROM usuarios", {
@@ -74,28 +96,78 @@ async function buscar_todos_los_usuarios() {
     })
     return resultado;
 }
+/*
+let verificar_token = (req, res, next)=>{
+    let token = req.headers.authorization;
+    console.log(token);
+    if(token){
+        token = token.split(" ")[1];
+        let decodificado = jwt.verify(token, jwtClave);
+        console.log(decodificado);
+        if(!decodificado){
+            res.status(401).send({error: 'Usuario no autorizado'})
+        }
+        next();
+    } else{
+        res.status(401).send({error: 'Usuario no autorizado'})
+    }
+}*/
+///////////////////////////////////////////ENDPOINTS USUARIOS//////////////////////////////////////////
 
-app.get('/usuarios', (req, res) => {
-    let {
-        usuario
-    } = req.body;
-    if (usuario) {
-        buscar_usuario(usuario)
-            .then(proyects => {
-                if (proyects.length == 0) {
-                    res.status(200).send({
-                        mensaje: 'El usuario no existe'
-                    });
-                } else {
-                    res.status(200).send(proyects)
+let administrador = {
+    usuario: 'administracion',
+    contraseña: 'password'
+}
+
+app.post('/login', (req, res)=>{
+    let {usuario, contraseña} = req.body;
+    if(usuario == administrador.usuario && contraseña == administrador.contraseña){
+        login(usuario, contraseña)
+            .then(proyects =>{
+                if(proyects.length == 0){
+                    res.status(400).send({status:'error', mensaje:'usuario o contraseña incorrectos'})
+                }
+                else{
+                    let token = jwt.sign({usuario: usuario}, jwtClave)
+                    let decodificado = jwt.verify(token, jwtClave)
+                    res.status(200).send({status:'OK', mensaje:'administrador logueado'})
                 }
             })
-            .catch(err => res.status(400).send(err));
-    } else {
-        buscar_todos_los_usuarios()
-            .then(proyects =>
-                res.status(200).send(proyects))
+    } else if(usuario && contraseña){
+        login(usuario, contraseña)
+            .then(proyects =>{
+                if(proyects.length == 0){
+                    res.status(400).send({status:'error', mensaje:'usuario o contraseña incorrectos'})
+                }
+                else{
+                    res.status(200).send({status:'OK', mensaje:'usuario logueado correctamente'})
+                }
+            }).catch(err=>console.log(err));
+    }else{
+        res.status(400).send({status:'error', mensaje:'debes ingresar usuario y contraseña para el login'})
     }
+})
+
+app.get('/usuarios',  (req, res) => {
+    let {usuario} = req.body;
+    
+        if (usuario) {
+            buscar_usuario(usuario)
+                .then(proyects => {
+                    if (proyects.length == 0) {
+                        res.status(200).send({
+                            mensaje: 'El usuario no existe'
+                        });
+                    } else {
+                        res.status(200).send(proyects)
+                    }
+                })
+                .catch(err => res.status(400).send(err));
+        } else {
+            buscar_todos_los_usuarios()
+                .then(proyects =>
+                    res.status(200).send(proyects)).catch(err=>console.log(err))
+        }
 })
 
 async function insertarUsuario(usuario) {
@@ -241,7 +313,7 @@ app.get('/productos', (req, res) => {
     }
 })
 
-app.post('/productos', verificar_si_existe, (req, res) => {
+app.post('/subir_producto', verificar_si_existe, (req, res) => {
 
     insertar_producto(req.body)
         .then(proyects => res.status(200).send({
@@ -252,7 +324,7 @@ app.post('/productos', verificar_si_existe, (req, res) => {
 
 
 
-app.delete('/productos', verificar_si_existe_delete_update, (req, res) => {
+app.delete('/borrar_producto', verificar_si_existe_delete_update, (req, res) => {
     let {
         nombre
     } = req.body;
@@ -267,7 +339,7 @@ app.delete('/productos', verificar_si_existe_delete_update, (req, res) => {
 })
 
 
-app.put('/productos', verificar_si_existe_delete_update, (req, res) => {
+app.put('/actualizar_producto', verificar_si_existe_delete_update, (req, res) => {
     let {
         nombre,
         campo,
@@ -322,7 +394,7 @@ async function insertar_pedido(pedido) {
     return resultado;
 }
 
-app.post('/pedidos', verificar_si_existe, (req, res) => {
+app.post('/nuevo_pedido', verificar_si_existe, (req, res) => {
     insertar_pedido(req.body)
         .then(proyects => res.status(200).send({
             status: 'OK',
@@ -334,11 +406,10 @@ app.post('/pedidos', verificar_si_existe, (req, res) => {
 app.put('/pedidos', verificar_si_existe_delete_update, (req, res) => {
     let {
         id_pedido,
-        campo,
-        nuevo_valor
+        nuevo_estado
     } = req.body;
-    sequelize.query(`UPDATE pedidos SET ${campo} = ? WHERE id_pedido = ?`, {
-            replacements: [nuevo_valor, id_pedido]
+    sequelize.query(`UPDATE pedidos SET estado = ? WHERE id_pedido = ?`, {
+            replacements: [nuevo_estado, id_pedido]
         })
         .then(proyects => res.status(200).send({
             status: 'OK',
