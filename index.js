@@ -15,18 +15,18 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+
 //Middleware que solicita contraseña de administrador en todos los endpoint excepto en /usuarios
-app.use(expressJwt({ secret: jwtClave, algorithms: ['sha1', 'RS256', 'HS256'] }).unless({ path: ["/productos", "/login", "/nuevo_pedido"] }));
+app.use(expressJwt({ secret: jwtClave, algorithms: ['sha1', 'RS256', 'HS256'] }).unless({ path: ["/productos", "/login", "/nuevo_pedido", "/crea_usuario"] }));
 
 app.use(function (err, req, res, next){
     if(err.name == 'UnauthorizedError'){
         res.status(401).send({status:'error 401', mensaje:'no tienes autorizacion para realizar esta accion'})
+    } else{
+        next();
     }
-    next();
+    
 })
-
-
-
 
 let verificar_si_existe = (req, res, next)=>{
     let usuario = req.body.usuario;
@@ -96,22 +96,7 @@ async function buscar_todos_los_usuarios() {
     })
     return resultado;
 }
-/*
-let verificar_token = (req, res, next)=>{
-    let token = req.headers.authorization;
-    console.log(token);
-    if(token){
-        token = token.split(" ")[1];
-        let decodificado = jwt.verify(token, jwtClave);
-        console.log(decodificado);
-        if(!decodificado){
-            res.status(401).send({error: 'Usuario no autorizado'})
-        }
-        next();
-    } else{
-        res.status(401).send({error: 'Usuario no autorizado'})
-    }
-}*/
+
 ///////////////////////////////////////////ENDPOINTS USUARIOS//////////////////////////////////////////
 
 let administrador = {
@@ -125,12 +110,12 @@ app.post('/login', (req, res)=>{
         login(usuario, contraseña)
             .then(proyects =>{
                 if(proyects.length == 0){
-                    res.status(400).send({status:'error', mensaje:'usuario o contraseña incorrectos'})
+                    res.status(400).send({status:'error', usuario: usuario, mensaje:'usuario o contraseña incorrectos'})
                 }
                 else{
                     let token = jwt.sign({usuario: usuario}, jwtClave)
                     let decodificado = jwt.verify(token, jwtClave)
-                    res.status(200).send({status:'OK', mensaje:'administrador logueado'})
+                    res.status(200).send({status:'OK', usuario: usuario, mensaje:'administrador logueado',  token: token})
                 }
             })
     } else if(usuario && contraseña){
@@ -140,7 +125,7 @@ app.post('/login', (req, res)=>{
                     res.status(400).send({status:'error', mensaje:'usuario o contraseña incorrectos'})
                 }
                 else{
-                    res.status(200).send({status:'OK', mensaje:'usuario logueado correctamente'})
+                    res.status(200).send({status:'OK', usuario: usuario, mensaje:'usuario logueado correctamente'})
                 }
             }).catch(err=>console.log(err));
     }else{
@@ -178,7 +163,7 @@ async function insertarUsuario(usuario) {
     return resultado;
 }
 
-app.post('/usuarios', verificar_si_existe, (req, res) => {
+app.post('/crear_usuario', verificar_si_existe, (req, res) => {
     insertarUsuario(req.body).then(proyects => res.status(200).send({
             status: 'OK',
             mensaje: 'Usuario agregado exitosamente'
