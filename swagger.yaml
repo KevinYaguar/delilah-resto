@@ -1,0 +1,410 @@
+swagger: "2.0"
+info:
+  description: "API para restaurante/tienda de comidas. Los usuarios podran registrarse, loguearse, solicitar una lista de productos y hacer un pedido. Solo el usuario administrador podrá realizar las operaciones de edicion del estado de los pedidos, consulta y eliminación de los mismos. También este podrá crear, consultar, eliminar y actualizar productos."
+  version: "1.0.0"
+  title: "Delilah-Resto"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "localhost:3000"
+basePath: "/v2"
+tags:
+- name: "crear_usuario"
+  description: "Endpoint para la creación de usuario"
+- name: "login"
+  description: "login"
+- name: "usuarios"
+  description: "Operations about user"
+- name: "productos"
+- name: "pedidos"
+- name: "nuevo_pedido"
+- name: "actualizar_producto"
+
+schemes:
+- "https"
+- "http"
+paths:
+  /crear_usuario:
+    post:
+      tags:
+      - "crear_usuario"
+      summary: "Crea un nuevo usuario"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      - "application/xml"
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Objeto usuario"
+        required: true
+        schema:
+          $ref: "#/definitions/usuario"
+      responses:
+        "200":
+          description: "Usuario agregado exitosamente"
+  /login:
+    post:
+      tags:
+      - "login"
+      summary: "Login with your username and password"
+      description: ""
+      operationId: ""
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Login with your username and password"
+        required: true
+        schema:
+          $ref: "#/definitions/usuario_login"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/usuario_login"
+        "400":
+          description: "Invalid Order"
+          schema:
+            $ref: "#/definitions/usuario_login"
+  /usuarios:
+    get:
+      tags:
+      - "usuarios"
+      summary: "Obtiene todos los usuarios registrados"
+      description: "Para obtener todos los usuarios, no ingrese ningun body. Para obtener un usuario especifico ingrese el nombre de usuario."
+      operationId: ""
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: ""
+        required: false
+        schema:
+            $ref: "#/definitions/usuario_get"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/array_usuarios"
+        "404":
+          description: "El usuario no existe"
+    delete:
+      tags:
+      - "usuarios"
+      summary: "Elimina un usuario"
+      description: "Elimina un usuario"
+      operationId: ""
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "ID of the order that needs to be deleted"
+        required: true
+        schema:
+            $ref: "#/definitions/usuario_get"
+      responses:
+        "200":
+          description: "succesfull"
+          schema:
+            $ref: "#/definitions/eliminado_error"
+    put:
+      tags:
+      - "usuarios"
+      summary: "Altera un usuario registrado"
+      description: "Ingrese el nombre, campo y nuevo valor del usuario que desee modificar."
+      operationId: ""
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+            $ref: "#/definitions/usuario_put"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/modificacion_realizada"
+        "400":
+          description: "Invalid ID supplied"
+        "404":
+          description: "Order not found"
+  /nuevo_pedido:
+    post:
+      tags:
+      - "nuevo_pedido"
+      summary: "Crea un nuevo pedido"
+      description: "Crea un nuevo pedido."
+      operationId: ""
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Created user object"
+        required: true
+        schema:
+          $ref: "#/definitions/pedido"
+      responses:
+        default:
+          description: "successful operation"
+  /pedidos:
+    get:
+      tags:
+      - "pedidos"
+      summary: "Obtiene la lista de pedidos"
+      description: "Obtiene la lista de pedidos."
+      operationId: ""
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Created user object"
+        required: true
+        schema:
+          $ref: "#/definitions/pedido"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/array_pedidos"
+    put:
+      tags:
+      - "pedidos"
+      summary: "Altera el estado de un pedido "
+      description: "Ingrese el id_pedido y el nuevo estado del pedido que desee modificar."
+      operationId: ""
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+            $ref: "#/definitions/modificar_pedido"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/modificacion_realizada"
+    delete:
+      tags:
+      - "pedidos"
+      summary: "Elimina un pedido"
+      description: "Elimina un pedido"
+      operationId: ""
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "ID of the order that needs to be deleted"
+        required: true
+        schema:
+            $ref: "#/definitions/id_pedido"
+      responses:
+        "200":
+          description: "succesfull"
+          schema:
+            $ref: "#/definitions/eliminado_error"        
+  /actualizar_producto:
+    put:
+      tags: 
+      - "actualizar_producto"
+      summary: "Podrás modificar el campo que quieras de un producto."
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/modificar_producto"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/modificacion_realizada"
+        "400":
+          description: "Invalid Order"
+          schema:
+            $ref: "#/definitions/eliminado_error"
+    
+securityDefinitions:
+  petstore_auth:
+    type: "oauth2"
+    authorizationUrl: "http://petstore.swagger.io/oauth/dialog"
+    flow: "implicit"
+    scopes:
+      write:pets: "modify pets in your account"
+      read:pets: "read your pets"
+  api_key:
+    type: "apiKey"
+    name: "api_key"
+    in: "header"
+definitions:
+  id_pedido:
+    type: "object"
+    properties:
+      id_pedido:
+        type: "string"
+  modificar_pedido:
+      type: "object"
+      properties:
+        id_pedido:
+          type: "string"
+        nuevo_estado:
+          type: "string"
+  array_pedidos:
+    type: "array"
+    items:
+      type: "object"
+      properties:
+        estado:
+          type: "string"
+        hora: 
+          type: "integer"
+        id_pedido: 
+          type: "integer"
+        descripcion: 
+          type: "string"
+        pago: 
+          type: "integer"
+        usuario_id: 
+          type: "integer"
+        direccion: 
+          type: "string"
+  modificar_producto:
+      type: "object"
+      properties:
+        nombre:
+          type: "string"
+        campo:
+          type: "string"
+        nuevo_valor:
+          type: "string"
+  eliminado_error:
+      type: "object"
+      properties:
+        status: 
+          type: "string"
+        mensaje:
+          type: "string"
+  modificacion_realizada:
+      type: "object"
+      properties:
+        status:
+          type: "string"
+        mensaje:
+          type: "string"
+  array_usuarios:
+    type: "array"
+    items: 
+      type: "object"
+      properties:
+        usuario_id: 
+          type: "integer"
+        usuario:
+          type: "string"
+        nombre_apellido:
+          type: "string"
+        mail:
+          type: "string"
+        telefono:
+          type: "integer"
+        direccion:
+          type: "string"
+        contraseña:
+          type: "string"
+  pedido:
+    type: "object"
+    properties:
+      estado:
+        type: "string"
+      hora: 
+        type: "integer"
+      id_pedido: 
+        type: "integer"
+      descripcion: 
+        type: "string"
+      pago: 
+        type: "integer"
+      usuario_id: 
+        type: "integer"
+      direccion: 
+        type: "string"
+  usuario_put:
+    type: "object"
+    properties:
+      usuario:
+        type: "string"
+      campo:
+        type: "string"
+      nuevo_valor:
+        type: "string"
+  usuario_get:
+    type: "object"
+    properties:
+      usuario:
+        type: "string"
+  usuario_login:
+    type: "object"
+    properties:
+      status:
+        type: "string"
+      usuario:
+        type: "string"
+      mensaje:
+        type: "string"
+  usuario:
+    type: "object"
+    required:
+    - "usuario_id"
+    - "usuario"
+    - "nombre_apellido"
+    - "mail"
+    - "telefono"
+    - "direccion"
+    - "contraseña"
+    properties:
+      usuario_id:
+        type: "integer"
+        format: "int64"
+      usuario:
+        type: "string"
+        example: "nombredeusuario"
+      nombre_apellido:
+        type: "string"
+      mail:
+        type: "string"
+      telefono:
+        type: "integer"
+      direccion:
+        type: "string"
+      contraseña:
+        type: "string"
+externalDocs:
+  description: "Find out more about Swagger"
+  url: "http://swagger.io"

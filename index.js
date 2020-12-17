@@ -122,7 +122,7 @@ app.post('/login', (req, res)=>{
         login(usuario, contraseña)
             .then(proyects =>{
                 if(proyects.length == 0){
-                    res.status(400).send({status:'error', mensaje:'usuario o contraseña incorrectos'})
+                    res.status(400).send({status:'error', usuario: usuario, mensaje:'usuario o contraseña incorrectos'})
                 }
                 else{
                     res.status(200).send({status:'OK', usuario: usuario, mensaje:'usuario logueado correctamente'})
