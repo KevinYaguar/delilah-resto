@@ -1,7 +1,0 @@
-CREATE TABLE `test`.`usuarios` ( `usuario_id` INT(200) NOT NULL AUTO_INCREMENT , `usuario` VARCHAR(30) NOT NULL , `nombre_apellido` VARCHAR(50) NOT NULL , `mail` VARCHAR(40) NOT NULL , `telefono` INT(20) NOT NULL , `direccion` VARCHAR(50) NOT NULL , `contraseña` VARCHAR(30) NOT NULL , PRIMARY KEY (`usuario_id`)) ENGINE = InnoDB;
-
-
-CREATE TABLE `test`.`pedidos` ( `estado` VARCHAR(30) NOT NULL , `hora` TIME(30) NOT NULL , `id_pedido` INT(200) NOT NULL AUTO_INCREMENT, `descripcion` VARCHAR(50) NOT NULL , `pago` INT(30) NOT NULL , `usuario_id` INT(200) NOT NULL , `direccion` INT(100) NOT NULL ) ENGINE = InnoDB;
-
-CREATE TABLE `test`.`productos` ( `id_producto` INT NOT NULL AUTO_INCREMENT , `nombre` VARCHAR NOT NULL , `precio` INT NOT NULL , PRIMARY KEY (`id_producto`)) ENGINE = InnoDB;
-

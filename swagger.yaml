@@ -10,16 +10,23 @@ host: "localhost:3000"
 basePath: "/v2"
 tags:
 - name: "crear_usuario"
-  description: "Endpoint para la creación de usuario"
+  description: "creación de usuario"
 - name: "login"
   description: "login"
 - name: "usuarios"
-  description: "Operations about user"
+  description: "Operaciones sobre los usuarios"
 - name: "productos"
+  description: "Operaciones sobre los productos"
 - name: "pedidos"
+  description: "Operaciones sobre los pedidos"
 - name: "nuevo_pedido"
+  description: "Operacion de hacer un nuevo pedido"
 - name: "actualizar_producto"
+  description: "Operacion de actualizar el estado de un pedido"
 - name: "subir_producto"
+  description: "Operacion de crear un nuevo producto"
+- name: "borrar_producto"
+  description: "Operacion para borrar un producto"
 
 schemes:
 - "https"
@@ -46,8 +53,18 @@ paths:
         schema:
           $ref: "#/definitions/usuario"
       responses:
-        "200":
+        "201":
           description: "Usuario agregado exitosamente"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "409":
+          description: "El usuario ya existe"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "500":
+          description: "Error inesperado"
+          schema: 
+            $ref: "#/definitions/status_mensaje"
   /login:
     post:
       tags:
@@ -76,29 +93,39 @@ paths:
             $ref: "#/definitions/usuario_login"
   /usuarios:
     get:
+      security:
+        - Bearer: []
       tags:
       - "usuarios"
       summary: "Obtiene todos los usuarios registrados"
-      description: "Para obtener todos los usuarios, no ingrese ningun body. Para obtener un usuario especifico ingrese el nombre de usuario."
+      description: "Si no ingresa un parametro obtiene la lista de usuarios, si ingresa un usuario(query) obtiene el usuario especificado"
       operationId: ""
       produces:
       - "application/xml"
       - "application/json"
       parameters:
-      - in: "body"
-        name: "body"
-        description: ""
-        required: false
-        schema:
-            $ref: "#/definitions/usuario_get"
+      - in: "query"
+        name: "usuario"
+        type: "string"
+            
       responses:
         "200":
           description: "successful operation"
           schema:
-            $ref: "#/definitions/array_usuarios"
+              $ref: "#/definitions/array_usuarios"
         "404":
           description: "El usuario no existe"
+        "401":
+          description: "UnauthorizedError"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "500":
+          description: "Error inesperado"
+          schema: 
+            $ref: "#/definitions/status_mensaje"
     delete:
+      security:
+        - Bearer: []
       tags:
       - "usuarios"
       summary: "Elimina un usuario"
@@ -118,8 +145,20 @@ paths:
         "200":
           description: "succesfull"
           schema:
-            $ref: "#/definitions/eliminado_error"
+            $ref: "#/definitions/status_mensaje"
+        "404":
+          description: "El usuario no existe"
+        "401":
+          description: "UnauthorizedError"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "500":
+          description: "Error inesperado"
+          schema: 
+            $ref: "#/definitions/status_mensaje"
     put:
+      security:
+        - Bearer: []
       tags:
       - "usuarios"
       summary: "Altera un usuario registrado"
@@ -139,11 +178,17 @@ paths:
         "200":
           description: "successful operation"
           schema:
-            $ref: "#/definitions/modificacion_realizada"
-        "400":
-          description: "Invalid ID supplied"
+            $ref: "#/definitions/status_mensaje"
         "404":
-          description: "Order not found"
+          description: "El usuario no existe"
+        "401":
+          description: "UnauthorizedError"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "500":
+          description: "Error inesperado"
+          schema: 
+            $ref: "#/definitions/status_mensaje"
   /nuevo_pedido:
     post:
       tags:
@@ -157,36 +202,53 @@ paths:
       parameters:
       - in: "body"
         name: "body"
-        description: "Created user object"
-        required: true
-        schema:
-          $ref: "#/definitions/pedido"
-      responses:
-        default:
-          description: "successful operation"
-  /pedidos:
-    get:
-      tags:
-      - "pedidos"
-      summary: "Obtiene la lista de pedidos"
-      description: "Obtiene la lista de pedidos."
-      operationId: ""
-      produces:
-      - "application/xml"
-      - "application/json"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "Created user object"
+        description: "Crea un nuevo pedido"
         required: true
         schema:
           $ref: "#/definitions/pedido"
       responses:
         "200":
+          description: "operacion exitosa"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "500":
+          description: "Error inesperado"
+          schema: 
+            $ref: "#/definitions/status_mensaje"
+  /pedidos:
+    get:
+      security:
+        - Bearer: []
+      tags:
+      - "pedidos"
+      summary: "Obtiene la lista de pedidos"
+      description: "Si no ingresa un parametro obtiene la lista de pedidos, si ingresa un id_pedido(query) obtiene el pedido especificado"
+      operationId: ""
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - in: "query"
+        name: "id_pedido"
+        type: "number"
+      responses:
+        "200":
           description: "successful operation"
           schema:
             $ref: "#/definitions/array_pedidos"
+        "404":
+          description: "El usuario no existe"
+        "401":
+          description: "UnauthorizedError"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "500":
+          description: "Error inesperado"
+          schema: 
+            $ref: "#/definitions/status_mensaje"
     put:
+      security:
+        - Bearer: []
       tags:
       - "pedidos"
       summary: "Altera el estado de un pedido "
@@ -206,8 +268,20 @@ paths:
         "200":
           description: "successful operation"
           schema:
-            $ref: "#/definitions/modificacion_realizada"
+            $ref: "#/definitions/status_mensaje"
+        "404":
+          description: "El numero de pedido es incorrecto"
+        "401":
+          description: "UnauthorizedError"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "500":
+          description: "Error inesperado"
+          schema: 
+            $ref: "#/definitions/status_mensaje"
     delete:
+      security:
+        - Bearer: []
       tags:
       - "pedidos"
       summary: "Elimina un pedido"
@@ -219,7 +293,7 @@ paths:
       parameters:
       - in: "body"
         name: "body"
-        description: "ID of the order that needs to be deleted"
+        description: "Ingresa un objecto con el id del pedido"
         required: true
         schema:
             $ref: "#/definitions/id_pedido"
@@ -227,12 +301,24 @@ paths:
         "200":
           description: "succesfull"
           schema:
-            $ref: "#/definitions/eliminado_error"        
+            $ref: "#/definitions/status_mensaje"
+        "404":
+          description: "El pedido no existe"
+        "401":
+          description: "UnauthorizedError"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "500":
+          description: "Error inesperado"
+          schema: 
+            $ref: "#/definitions/status_mensaje"
   /actualizar_producto:
     put:
+      security:
+        - Bearer: []
       tags: 
       - "actualizar_producto"
-      summary: "Podrás modificar el campo que quieras de un producto."
+      summary: "Podrás modificar el estado de un producto."
       produces:
       - "application/xml"
       - "application/json"
@@ -247,13 +333,21 @@ paths:
         "200":
           description: "successful operation"
           schema:
-            $ref: "#/definitions/modificacion_realizada"
+            $ref: "#/definitions/status_mensaje"
         "400":
           description: "Invalid Order"
           schema:
-            $ref: "#/definitions/eliminado_error"
+            $ref: "#/definitions/status_mensaje"
+        "404":
+          description: "El producto no existe"
+        "500":
+          description: "Error inesperado"
+          schema: 
+            $ref: "#/definitions/status_mensaje"  
   /subir_producto:
     post:
+      security:
+        - Bearer: []
       tags:
       - "subir_producto"
       summary: "Crea un nuevo producto"
@@ -264,39 +358,123 @@ paths:
       parameters:
       - in: "body"
         name: "body"
-        description: "Created user object"
+        description: "Ingresa un objecto con las propiedades especificadas"
         required: true
         schema:
           $ref: "#/definitions/producto"
       responses:
         "200":
-          description: "successful"
+          description: "Producto agregado exitosamente"
           schema:
-            $ref: "#/definitions/eliminado_error"
-  
-    
+            $ref: "#/definitions/status_mensaje"
+        "401":
+          description: "UnauthorizedError"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "409":
+          description: "El producto que quieres subir ya existe"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "500":
+          description: "Error inesperado"
+          schema: 
+            $ref: "#/definitions/status_mensaje"
+  /productos:
+    get:
+      tags:
+      - "productos"
+      summary: "Obtiene todos los productos registrados"
+      description: "Para obtener todos los productos, no ingrese ningun parametro. Para obtener un producto especifico ingrese el nombre del producto con query."
+      operationId: ""
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - in: "query"
+        name: "nombre"
+        description: "ingrese el nombre del producto que busca"
+        required: false
+        type: "string"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/array_productos"
+        "404":
+          description: "Producto no encontrado"
+        "401":
+          description: "UnauthorizedError"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "500":
+          description: "Error inesperado"
+          schema: 
+            $ref: "#/definitions/status_mensaje"
+  /borrar_producto:
+    delete:
+      security:
+        - Bearer: []
+      tags:
+      - "borrar_producto"
+      summary: "Elimina un producto"
+      description: "Elimina un producto"
+      operationId: ""
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Ingrese el nombre de producto que desea eliminar en el body.nombre"
+        required: true
+        schema:
+            $ref: "#/definitions/producto_get"
+      responses:
+        "200":
+          description: "Producto eliminado exitosamente"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "404":
+          description: "Producto no encontrado"
+        "401":
+          description: "UnauthorizedError"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "500":
+          description: "Error inesperado"
+          schema: 
+            $ref: "#/definitions/status_mensaje"
 securityDefinitions:
-  petstore_auth:
-    type: "oauth2"
-    authorizationUrl: "http://petstore.swagger.io/oauth/dialog"
-    flow: "implicit"
-    scopes:
-      write:pets: "modify pets in your account"
-      read:pets: "read your pets"
-  api_key:
-    type: "apiKey"
-    name: "api_key"
-    in: "header"
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header  
 definitions:
+  producto_get:
+      type: "object"
+      properties:
+        nombre: 
+          type: "string"
   producto:
       type: "object"
       properties:
-        id_producto:
-          type: "integer"
+        id_producto: 
+            type: "integer"
         nombre:
-          type: "string"
+            type: "string"
         precio:
-          type: "integer"
+            type: "integer"
+  array_productos:
+      type: "array"
+      items: 
+        type: "object"
+        properties:
+          id_producto: 
+            type: "integer"
+          nombre:
+            type: "string"
+          precio:
+            type: "integer"
   id_pedido:
     type: "object"
     properties:
@@ -337,17 +515,10 @@ definitions:
           type: "string"
         nuevo_valor:
           type: "string"
-  eliminado_error:
+  status_mensaje:
       type: "object"
       properties:
         status: 
-          type: "string"
-        mensaje:
-          type: "string"
-  modificacion_realizada:
-      type: "object"
-      properties:
-        status:
           type: "string"
         mensaje:
           type: "string"
@@ -437,6 +608,3 @@ definitions:
         type: "string"
       contraseña:
         type: "string"
-externalDocs:
-  description: "Find out more about Swagger"
-  url: "http://swagger.io"
