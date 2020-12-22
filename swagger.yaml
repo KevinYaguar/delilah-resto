@@ -19,6 +19,7 @@ tags:
 - name: "pedidos"
 - name: "nuevo_pedido"
 - name: "actualizar_producto"
+- name: "subir_producto"
 
 schemes:
 - "https"
@@ -251,6 +252,28 @@ paths:
           description: "Invalid Order"
           schema:
             $ref: "#/definitions/eliminado_error"
+  /subir_producto:
+    post:
+      tags:
+      - "subir_producto"
+      summary: "Crea un nuevo producto"
+      description: "Crea un nuevo producto."
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Created user object"
+        required: true
+        schema:
+          $ref: "#/definitions/producto"
+      responses:
+        "200":
+          description: "successful"
+          schema:
+            $ref: "#/definitions/eliminado_error"
+  
     
 securityDefinitions:
   petstore_auth:
@@ -265,6 +288,15 @@ securityDefinitions:
     name: "api_key"
     in: "header"
 definitions:
+  producto:
+      type: "object"
+      properties:
+        id_producto:
+          type: "integer"
+        nombre:
+          type: "string"
+        precio:
+          type: "integer"
   id_pedido:
     type: "object"
     properties:

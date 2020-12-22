@@ -39,8 +39,8 @@ let verificar_si_existe = (req, res, next)=>{
             if (!user) {
                 return next();
             } else if (user) {
-                res.status(400).send({
-                    status: 400,
+                res.status(409).send({
+                    status: 409,
                     mensaje: 'El usuario ya existe'
                 })
             }
@@ -52,8 +52,8 @@ let verificar_si_existe = (req, res, next)=>{
             if (!producto) {
                 return next();
             } else if (producto) {
-                res.status(400).send({
-                    status: 400,
+                res.status(409).send({
+                    status: 409,
                     mensaje: 'El producto que quieres subir ya existe'
                 })
             }
@@ -134,8 +134,8 @@ app.post('/login', (req, res)=>{
 })
 
 app.get('/usuarios',  (req, res) => {
-    let {usuario} = req.body;
-    
+    let {usuario} = req.query;
+    console.log(usuario)
         if (usuario) {
             buscar_usuario(usuario)
                 .then(proyects => {
@@ -164,7 +164,7 @@ async function insertarUsuario(usuario) {
 }
 
 app.post('/crear_usuario', verificar_si_existe, (req, res) => {
-    insertarUsuario(req.body).then(proyects => res.status(200).send({
+    insertarUsuario(req.body).then(proyects => res.status(201).send({
             status: 'OK',
             mensaje: 'Usuario agregado exitosamente'
         }))
@@ -184,8 +184,8 @@ let verificar_si_existe_delete_update = (req, res, next) =>{
             if (user) {
                 return next();
             } else if (!user) {
-                res.status(200).send({
-                    status: 400,
+                res.status(404).send({
+                    status: 404,
                     mensaje: 'El usuario ingresado no existe'
                 });
             }
@@ -197,8 +197,8 @@ let verificar_si_existe_delete_update = (req, res, next) =>{
             if (product) {
                 return next();
             } else if (!product) {
-                res.status(400).send({
-                    status: 400,
+                res.status(404).send({
+                    status: 404,
                     mensaje: 'El producto no existe'
                 });
             }
@@ -210,8 +210,8 @@ let verificar_si_existe_delete_update = (req, res, next) =>{
             if (pedido) {
                 return next();
             } else if (!pedido) {
-                res.status(400).send({
-                    status: 'error',
+                res.status(404).send({
+                    status: 404,
                     mensaje: 'El numero de pedido es incorrecto'
                 });
             }
@@ -278,7 +278,7 @@ async function insertar_producto(producto) {
 app.get('/productos', (req, res) => {
     let {
         nombre
-    } = req.body;
+    } = req.query;
     if (nombre) {
         buscar_producto(nombre)
             .then(proyects => {
@@ -302,11 +302,10 @@ app.post('/subir_producto', verificar_si_existe, (req, res) => {
 
     insertar_producto(req.body)
         .then(proyects => res.status(200).send({
-            status: 'OK',
+            status: 200,
             mensaje: 'Producto agregado exitosamente'
         })).catch(err => console.log(err));
 })
-
 
 
 app.delete('/borrar_producto', verificar_si_existe_delete_update, (req, res) => {
@@ -317,7 +316,7 @@ app.delete('/borrar_producto', verificar_si_existe_delete_update, (req, res) => 
             replacements: [nombre]
         })
         .then(proyects => res.status(200).send({
-            status: 'OK',
+            status: 200,
             mensaje: 'Producto eliminado exitosamente'
         }))
         .catch(err => console.log(err));
@@ -348,9 +347,9 @@ async function buscar_pedido(id_pedido) {
     return resultado;
 }
 
-
 app.get('/pedidos', (req, res) => {
-    let id_pedido = req.body.id_pedido;
+    let {id_pedido} = req.query;
+    console.log(id_pedido)
     if (id_pedido) {
         buscar_pedido(id_pedido)
             .then(proyects => {
@@ -369,7 +368,6 @@ app.get('/pedidos', (req, res) => {
             .then(proyects => res.status(200).send(proyects)).catch(err => console.log(err));
     }
 });
-
 
 async function insertar_pedido(pedido) {
     let arrayPedido = Object.values(pedido)
@@ -419,11 +417,11 @@ app.listen(process.env.SERVER_PORT, (req, res) => {
     console.log('Servidor corriendo en el puerto 3000');
 })
 
-
 app.use((err, req, res, next) => {
     if (!err) {
         next();
     } else {
         console.log(JSON.stringify(err));
+        res.status(500).send({status: 500, mensaje:'Ha ocurrido un error inesperado'})
     }
 })
