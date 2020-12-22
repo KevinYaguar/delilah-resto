@@ -100,8 +100,8 @@ async function buscar_todos_los_usuarios() {
 ///////////////////////////////////////////ENDPOINTS USUARIOS//////////////////////////////////////////
 
 let administrador = {
-    usuario: 'administracion',
-    contraseña: 'password'
+    usuario: 'AdministradorDelilah',
+    contraseña: 'd3L!l4_P4sSw0rd'
 }
 
 app.post('/login', (req, res)=>{
