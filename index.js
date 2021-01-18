@@ -33,17 +33,12 @@ const {
     if_product_exists_next, if_product_exists_reject
 } = require('./Products/Products-Middlewares.js')
 
-const {
-    insertar_pedido,
+const {get_all_orders,
+    update_state,
+    buscar_pedido,
+    insertar_pedido} = require('./Orders/Order-functions')
+
     
-    verificar_si_existe_delete_update_PRODUCTOS,
-    verificar_si_existe_delete_update_PEDIDOS,
-    delete_pedido,
-    autenticar_usuario_PEDIDOS,
-} = require('./funciones')
-
-
-//Middleware que solicita contraseña de administrador en todos los endpoint excepto en /usuarios
 app.use(expressJwt({ secret: jwtClave, algorithms: ['sha1', 'RS256', 'HS256'] })
     .unless({ path: ["/login", "/crear_usuario"] }));
 
@@ -57,6 +52,16 @@ app.use(function (err, req, res, next){
 
 ///////////////////////////////////////////ENDPOINTS USUARIOS//////////////////////////////////////////
 
+app.post('/crear_usuario', if_user_exists_reject, (req, res) => {
+    let {usuario_id, usuario, nombre_apellido, mail, telefono, direccion, contraseña, role} = req.body;
+        
+    insertarUsuario(usuario_id, usuario, nombre_apellido, mail, telefono, direccion, contraseña, role)
+        .then(responses => res.status(201).send({
+                status: 'OK',
+                mensaje: `${role} agregado exitosamente`
+            }))
+            .catch(err => console.log(err));
+})
 
 app.post('/login', data_request, if_user_exists_next, user_pass,  (req, res)=>{
     let {usuario} = req.body;
@@ -85,16 +90,7 @@ app.get('/usuarios', (req, res) => {
         })
 })
 
-app.post('/crear_usuario', if_user_exists_reject, (req, res) => {
-    let {usuario_id, usuario, nombre_apellido, mail, telefono, direccion, contraseña, role} = req.body;
-        
-    insertarUsuario(usuario_id, usuario, nombre_apellido, mail, telefono, direccion, contraseña, role)
-        .then(proyects => res.status(201).send({
-                status: 'OK',
-                mensaje: `${role} agregado exitosamente`
-            }))
-            .catch(err => console.log(err));
-})
+
 
 
 ///////////////////////////////////////////ENDPOINTS PRODUCTOS//////////////////////////////////////////
@@ -103,7 +99,7 @@ app.post('/crear_usuario', if_user_exists_reject, (req, res) => {
 app.get('/productos', (req, res) => {
     
     get_products_list()
-        .then(proyects => res.status(200).send(proyects))
+        .then(responses => res.status(200).send(responses))
         .catch(err => console.log(err));
 
 })
@@ -111,7 +107,7 @@ app.get('/productos', (req, res) => {
 app.post('/subir_producto', check_rol,if_product_exists_reject, (req, res) => {
 
     insert_product(req.body)
-        .then(proyects => res.status(200).send({
+        .then(responses => res.status(200).send({
             status: 200,
             mensaje: 'Producto agregado exitosamente'
         })).catch(err => console.log(err));
@@ -123,7 +119,7 @@ app.delete('/borrar_producto', check_rol, if_product_exists_next, (req, res) => 
         nombre
     } = req.body;
     delete_product(nombre)
-        .then(proyects =>{
+        .then(responses =>{
             res.status(200).send({
                 status:'ok',
                 mensaje:'Producto eliminado con exito'
@@ -136,7 +132,7 @@ app.put('/actualizar_producto', check_rol,if_product_exists_next, (req, res) => 
     let {nombre, campo, nuevo_valor} = req.body;
 
     update_product(nombre, campo, nuevo_valor)
-        .then(proyects => {
+        .then(responses => {
             res.status(200).send({
                 status:'ok',
                 mensaje:'Modificacion realizada con exito!'
@@ -146,63 +142,61 @@ app.put('/actualizar_producto', check_rol,if_product_exists_next, (req, res) => 
 //////////////////////////////////////////ENDPOINT PEDIDOS////////////////////////////////////////// 
 
 
-app.get('/pedidos', (req, res) => {
-    let {id_pedido} = req.query;
-    console.log(id_pedido)
-    if (id_pedido) {
-        buscar_pedido(id_pedido)
-            .then(proyects => {
-                if (proyects.length == 0) {
-                    res.status(404).send({
-                        mensaje: 'pedido no encontrado'
-                    })
-                } else {
-                    res.status(200).send(proyects)
-                }
-            }).catch(err => console.log(err));
-    } else if (!id_pedido) {
-        sequelize.query('SELECT * FROM pedidos', {
-                type: sequelize.QueryTypes.SELECT
-            })
-            .then(proyects => res.status(200).send(proyects)).catch(err => console.log(err));
-    }
+app.get('/pedidos', check_rol, (req, res) => {
+
+    get_all_orders()
+        .then(responses => 
+            res.status(200).send(responses))
+            .catch(err => console.log(err));
+
 });
 
+app.get('/my_order', (req, res)=>{
+    let token = (req.headers.authorization).split(' ')[1];
+    
+    let decodificado = jwt.verify(token, jwtClave)
 
-app.post('/nuevo_pedido', autenticar_usuario_PEDIDOS, (req, res) => {
-    insertar_pedido(req.body)
-        .then(proyects => res.status(200).send({
+    const usuario = decodificado.usuario;
+
+    buscar_pedido(usuario)
+        .then(responses => {
+            res.status(200).send(responses)
+        })
+        .catch(err=> console.log(err))
+
+})
+
+
+app.post('/nuevo_pedido', (req, res) => {
+    
+    let token = (req.headers.authorization).split(' ')[1];
+    
+    let decodificado = jwt.verify(token, jwtClave)
+
+    const usuario = decodificado.usuario;
+
+    insertar_pedido(req.body, usuario)
+        .then(responses => 
+            res.status(200).send({
             status: 'OK',
             mensaje: 'Pedido agregado exitosamente'
         }))
         .catch(err => console.log(err));
 })
 
-app.put('/pedidos', verificar_si_existe_delete_update_PEDIDOS, (req, res) => {
+app.put('/update_state', check_rol, (req, res) => {
     let {
         id_pedido,
         nuevo_estado
     } = req.body;
-    sequelize.query(`UPDATE pedidos SET estado = ? WHERE id_pedido = ?`, {
-            replacements: [nuevo_estado, id_pedido]
-        })
-        .then(proyects => res.status(200).send({
+   
+    update_state(id_pedido, nuevo_estado).then(responses => res.status(200).send({
             status: 'OK',
             mensaje: 'Modificacion realizada'
         }))
         .catch(err => console.log(err));
 })
 
-
-
-app.delete('/pedidos', verificar_si_existe_delete_update_PEDIDOS, (req, res) => {
-    let {id_pedido} = req.body;
-    delete_pedido(id_pedido).then(proyects => res.status(200).send({
-        status: 'OK',
-        mensaje: 'Pedido eliminado con éxito'
-    }))
-    .catch(err => console.log(err));
-})
 
 app.listen(process.env.SERVER_PORT, (req, res) => {
     console.log('Servidor corriendo en el puerto 3000');

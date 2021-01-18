@@ -108,5 +108,4 @@ module.exports = {
     user_pass,
     data_request,
     check_rol
-
 }

@@ -1,6 +1,6 @@
 swagger: "2.0"
 info:
-  description: "API para restaurante/tienda de comidas. Los usuarios podran registrarse, loguearse, solicitar una lista de productos y hacer un pedido. Solo el usuario administrador podrá realizar las operaciones de edicion del estado de los pedidos, consulta y eliminación de los mismos. También este podrá crear, consultar, eliminar y actualizar productos."
+  description: "API para restaurante/tienda de comidas. Los usuarios podran registrarse, loguearse, solicitar una lista de productos, hacer un pedido y consultar su pedido. Solo el usuario administrador podrá realizar las operaciones de edicion del estado de los pedidos y consulta de todos ellos. También este podrá crear, consultar, eliminar y actualizar productos."
   version: "1.0.0"
   title: "Delilah-Resto"
   license:
@@ -33,39 +33,6 @@ schemes:
 - "https"
 - "http"
 paths:
-  /crear_admin:
-     post:
-      tags:
-      - "crear_admin"
-      summary: "Crea un nuevo usuario"
-      description: ""
-      operationId: ""
-      consumes:
-      - "application/json"
-      - "application/xml"
-      produces:
-      - "application/xml"
-      - "application/json"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "Objeto usuario"
-        required: true
-        schema:
-          $ref: "#/definitions/administrador"
-      responses:
-        "201":
-          description: "Usuario agregado exitosamente"
-          schema:
-            $ref: "#/definitions/status_mensaje"
-        "409":
-          description: "El usuario ya existe"
-          schema:
-            $ref: "#/definitions/status_mensaje"
-        "500":
-          description: "Error inesperado"
-          schema: 
-            $ref: "#/definitions/status_mensaje"
   /crear_usuario:
     post:
       tags:
@@ -104,99 +71,7 @@ paths:
       tags:
       - "login"
       summary: "Login with your username and password"
-      description: ""
-      operationId: ""
-      produces:
-      - "application/xml"
-      - "application/json"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "Login with your username and password"
-        required: true
-        schema:
-          $ref: "#/definitions/usuario_login"
-      responses:
-        "200":
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/usuario_login"
-        "400":
-          description: "Invalid Order"
-          schema:
-            $ref: "#/definitions/usuario_login"
-  /usuarios:
-    get:
-      security:
-        - Bearer: []
-      tags:
-      - "usuarios"
-      summary: "Obtiene todos los usuarios registrados"
-      description: "Si no ingresa un parametro obtiene la lista de usuarios, si ingresa un usuario(query) obtiene el usuario especificado"
-      operationId: ""
-      produces:
-      - "application/xml"
-      - "application/json"
-      parameters:
-      - in: "query"
-        name: "usuario"
-        type: "string"
-            
-      responses:
-        "200":
-          description: "successful operation"
-          schema:
-              $ref: "#/definitions/array_usuarios"
-        "404":
-          description: "El usuario no existe"
-        "401":
-          description: "UnauthorizedError"
-          schema:
-            $ref: "#/definitions/status_mensaje"
-        "500":
-          description: "Error inesperado"
-          schema: 
-            $ref: "#/definitions/status_mensaje"
-    delete:
-      security:
-        - Bearer: []
-      tags:
-      - "usuarios"
-      summary: "Elimina un usuario"
-      description: "Elimina un usuario"
-      operationId: ""
-      produces:
-      - "application/xml"
-      - "application/json"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "ID of the order that needs to be deleted"
-        required: true
-        schema:
-            $ref: "#/definitions/usuario_get"
-      responses:
-        "200":
-          description: "succesfull"
-          schema:
-            $ref: "#/definitions/status_mensaje"
-        "404":
-          description: "El usuario no existe"
-        "401":
-          description: "UnauthorizedError"
-          schema:
-            $ref: "#/definitions/status_mensaje"
-        "500":
-          description: "Error inesperado"
-          schema: 
-            $ref: "#/definitions/status_mensaje"
-    put:
-      security:
-        - Bearer: []
-      tags:
-      - "usuarios"
-      summary: "Altera un usuario registrado"
-      description: "Ingrese el nombre, campo y nuevo valor del usuario que desee modificar."
+      description: "Responde con el token que necesitara para realizar el resto de las operaciones"
       operationId: ""
       produces:
       - "application/xml"
@@ -207,14 +82,81 @@ paths:
         description: ""
         required: true
         schema:
-            $ref: "#/definitions/usuario_put"
+          $ref: "#/definitions/usuario_login_req"
       responses:
         "200":
           description: "successful operation"
           schema:
+            $ref: "#/definitions/usuario_login_res"
+        "412":
+          description: "Faltan datos"
+          schema:
             $ref: "#/definitions/status_mensaje"
         "404":
-          description: "El usuario no existe"
+          description: "El usuario ingresado no existe"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "403":
+          description: "Contraseña incorrecta"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "500":
+          description: "Error inesperado"
+          schema: 
+            $ref: "#/definitions/status_mensaje"
+  /usuarios:
+    get:
+      security:
+        - Bearer: []
+      tags:
+      - "usuarios"
+      summary: "Obtiene la informacion del usuario"
+      description: "Responde con la informacion del usuario logueado que solicita la accion. Tiene que enviar el token BEARER en el header de authorization"
+      operationId: ""
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - in: "header"
+        name: "authorization"
+        type: "string"
+            
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+              $ref: "#/definitions/usuario"
+        "401":
+          description: "UnauthorizedError"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "500":
+          description: "Error inesperado"
+          schema: 
+            $ref: "#/definitions/status_mensaje"
+  /productos:
+    get:
+      tags:
+      - "productos"
+      summary: "Obtiene todos los productos registrados"
+      description: "Para obtener todos los productos, no ingrese ningun parametro. Para obtener un producto especifico ingrese el nombre del producto con query."
+      operationId: ""
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - in: "query"
+        name: "nombre"
+        description: "ingrese el nombre del producto que busca"
+        required: false
+        type: "string"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/array_productos"
+        "404":
+          description: "Producto no encontrado"
         "401":
           description: "UnauthorizedError"
           schema:
@@ -413,37 +355,6 @@ paths:
           description: "Error inesperado"
           schema: 
             $ref: "#/definitions/status_mensaje"
-  /productos:
-    get:
-      tags:
-      - "productos"
-      summary: "Obtiene todos los productos registrados"
-      description: "Para obtener todos los productos, no ingrese ningun parametro. Para obtener un producto especifico ingrese el nombre del producto con query."
-      operationId: ""
-      produces:
-      - "application/xml"
-      - "application/json"
-      parameters:
-      - in: "query"
-        name: "nombre"
-        description: "ingrese el nombre del producto que busca"
-        required: false
-        type: "string"
-      responses:
-        "200":
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/array_productos"
-        "404":
-          description: "Producto no encontrado"
-        "401":
-          description: "UnauthorizedError"
-          schema:
-            $ref: "#/definitions/status_mensaje"
-        "500":
-          description: "Error inesperado"
-          schema: 
-            $ref: "#/definitions/status_mensaje"
   /borrar_producto:
     delete:
       security:
@@ -556,25 +467,6 @@ definitions:
           type: "string"
         mensaje:
           type: "string"
-  array_usuarios:
-    type: "array"
-    items: 
-      type: "object"
-      properties:
-        usuario_id: 
-          type: "integer"
-        usuario:
-          type: "string"
-        nombre_apellido:
-          type: "string"
-        mail:
-          type: "string"
-        telefono:
-          type: "integer"
-        direccion:
-          type: "string"
-        contraseña:
-          type: "string"
   pedido:
     type: "object"
     properties:
@@ -606,7 +498,7 @@ definitions:
     properties:
       usuario:
         type: "string"
-  usuario_login:
+  usuario_login_res:
     type: "object"
     properties:
       status:
@@ -615,6 +507,16 @@ definitions:
         type: "string"
       mensaje:
         type: "string"
+      token:
+        type: "string"
+  usuario_login_req:
+    type: "object"
+    properties:
+      usuario:
+        type: "string"
+      contraseña:
+        type: "string"
+      
   administrador:
     type: "object"
     required:
