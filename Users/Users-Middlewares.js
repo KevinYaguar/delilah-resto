@@ -12,6 +12,8 @@ const sequelize = new Sequelize(
         }
 });
 
+const jwtClave =  process.env.CLAVE; 
+
 const {buscar_usuario, login} = require('./Users')
 
 let if_user_exists_reject = (req, res, next) => {
@@ -75,11 +77,36 @@ let data_request = (req, res, next) => {
     }
 }
 
+const jwt = require('jsonwebtoken');
+
+let check_rol = (req, res, next) => {
+
+    let token = (req.headers.authorization).split(' ')[1];
+    
+    let decodificado = jwt.verify(token, jwtClave)
+
+    const usuario = decodificado.usuario;
+
+    buscar_usuario(decodificado.usuario)
+        .then(arrayUsuarios =>{
+            let user = arrayUsuarios.find(u => u.usuario == usuario)
+            if(user.role === 'Administrador'){
+                next();
+            } else {
+                res.status(400).send({
+                    status:'error',
+                    mensaje:'Necesitas ser administrador para realizar esta acción'
+                })
+            }
+        })
+
+}
 
 module.exports = {
     if_user_exists_reject, 
     if_user_exists_next,
     user_pass,
-    data_request
+    data_request,
+    check_rol
 
 }

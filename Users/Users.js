@@ -36,9 +36,17 @@ async function login(usuario, contrasena) {
     return resultado;
 }
 
+async function buscar_todos_los_usuarios() {
+    let resultado = await sequelize.query("SELECT * FROM usuarios", {
+        type: sequelize.QueryTypes.SELECT
+    })
+    return resultado;
+}
+
 
 module.exports = {
     insertarUsuario,
     buscar_usuario,
+    buscar_todos_los_usuarios,
     login
 }

@@ -11,20 +11,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const {insertarUsuario, buscar_usuario, login} = require('./Users/Users.js')
-const {if_user_exists_reject, if_user_exists_next, user_pass, data_request} = require('./Users/Users-Middlewares.js')
+const {insertarUsuario, buscar_usuario} = require('./Users/Users.js')
+const {if_user_exists_reject, if_user_exists_next, user_pass, data_request, check_rol} = require('./Users/Users-Middlewares.js')
 
 const {
     buscar_todos_los_productos,
-    
-    
-    buscar_todos_los_usuarios,
     buscar_producto,
     insertar_producto,
     insertar_pedido,
-    
     verificar_si_existe_producto,
-
     verificar_si_existe_delete_update_PRODUCTOS,
     verificar_si_existe_delete_update_PEDIDOS,
     delete_pedido,
@@ -38,7 +33,7 @@ app.use(expressJwt({ secret: jwtClave, algorithms: ['sha1', 'RS256', 'HS256'] })
 
 app.use(function (err, req, res, next){
     if(err.name == 'UnauthorizedError'){
-        res.status(401).send({status:'error 401', mensaje:'no tienes autorizacion para realizar esta accion'})
+        res.status(401).send({status:'error 401', mensaje:'Tienes que estar logueado para realizar esta acción'})
     } else{
         next();
     }
@@ -49,48 +44,44 @@ app.use(function (err, req, res, next){
 
 
 app.post('/login', data_request, if_user_exists_next, user_pass,  (req, res)=>{
-    let {usuario, contraseña} = req.body;
+    let {usuario} = req.body;
 
-        let token = jwt.sign({usuario: usuario}, jwtClave)
-        //let decodificado = jwt.verify(token, jwtClave)
-        res.status(200).send({status:'OK', usuario: usuario, mensaje:'Login success',  token: token})
-
+    let token = jwt.sign({usuario: usuario}, jwtClave)
+    let decodificado = jwt.verify(token, jwtClave)
+    res.status(200).send(
+        {status:'OK', 
+        usuario: usuario, 
+        mensaje:'Login success',  
+        token: token
+    })
 })
 
 
-app.get('/usuarios',  (req, res) => {
-    let {usuario} = req.query;
-    console.log(usuario)
-        if (usuario) {
-            buscar_usuario(usuario)
-                .then(proyects => {
-                    if (proyects.length == 0) {
-                        res.status(200).send({
-                            mensaje: 'El usuario no existe'
-                        });
-                    } else {
-                        res.status(200).send(proyects)
-                    }
-                })
-                .catch(err => res.status(400).send(err));
-        } else {
-            buscar_todos_los_usuarios()
-                .then(proyects =>
-                    res.status(200).send(proyects)).catch(err=>console.log(err))
-        }
+app.get('/usuarios', (req, res) => {
+    let token = (req.headers.authorization).split(' ')[1];
+    
+    let decodificado = jwt.verify(token, jwtClave)
+
+    const usuario = decodificado.usuario;
+
+    buscar_usuario(decodificado.usuario)
+        .then(arrayUsuarios =>{
+            let user = arrayUsuarios.find(u => u.usuario == usuario)
+            
+            res.status(200).send(user)
+        })
 })
 
 
 app.post('/crear_usuario', if_user_exists_reject, (req, res) => {
     let {usuario_id, usuario, nombre_apellido, mail, telefono, direccion, contraseña, role} = req.body;
         
-        insertarUsuario(usuario_id, usuario, nombre_apellido, mail, telefono, direccion, contraseña, role)
-            .then(proyects => res.status(201).send({
+    insertarUsuario(usuario_id, usuario, nombre_apellido, mail, telefono, direccion, contraseña, role)
+        .then(proyects => res.status(201).send({
                 status: 'OK',
                 mensaje: `${role} agregado exitosamente`
             }))
             .catch(err => console.log(err));
-        
 })
 
 

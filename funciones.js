@@ -14,32 +14,12 @@ const sequelize = new Sequelize(
 
 ///////////////////////USUARIOS//////////////////////
 
-let verificar_si_existe_delete_update_USUARIOS = (req, res, next) => {
-    let {usuario} = req.body;
-    buscar_usuario(usuario)
-            .then(proyects => {
-                let user = proyects.find(u => u.usuario == usuario);
-                if (user) {
-                    return next();
-                } else if (!user) {
-                    res.status(404).send({
-                        status: 404,
-                        mensaje: 'El usuario ingresado no existe'
-                    });
-                }
-            })
-}
 
 
 
 
 
-async function buscar_todos_los_usuarios() {
-    let resultado = await sequelize.query("SELECT * FROM usuarios", {
-        type: sequelize.QueryTypes.SELECT
-    })
-    return resultado;
-}
+
 
 
 //////////////////////PRODUCTOS////////////////////////
@@ -165,12 +145,11 @@ async function delete_pedido(id_pedido) {
 module.exports = {
     buscar_todos_los_productos,
 
-    buscar_todos_los_usuarios,
+    
     buscar_producto,
     insertar_producto,
     insertar_pedido,
     verificar_si_existe_producto,
-    verificar_si_existe_delete_update_USUARIOS,
     verificar_si_existe_delete_update_PRODUCTOS,
     verificar_si_existe_delete_update_PEDIDOS,
     delete_pedido,
