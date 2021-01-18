@@ -1,11 +1,10 @@
-CREATE DATABASE delilahresto; 
-USE delilahresto;
+CREATE DATABASE delilah_resto; 
+USE delilah_resto;
 
-CREATE TABLE `delilahresto`.`usuarios` ( `usuario_id` INT(200) NOT NULL AUTO_INCREMENT , `usuario` VARCHAR(30) NOT NULL , `nombre_apellido` VARCHAR(50) NOT NULL , `mail` VARCHAR(40) NOT NULL , `telefono` INT(20) NOT NULL , `direccion` VARCHAR(50) NOT NULL , `contraseña` VARCHAR(30) NOT NULL , PRIMARY KEY (`usuario_id`)) ENGINE = InnoDB;
+CREATE TABLE `delilah_resto`.`usuarios` ( `usuario_id` INT(200) NOT NULL AUTO_INCREMENT , `usuario` VARCHAR(30) NOT NULL , `nombre_apellido` VARCHAR(50) NOT NULL , `mail` VARCHAR(40) NOT NULL , `telefono` INT(20) NOT NULL , `direccion` VARCHAR(50) NOT NULL , `contraseña` VARCHAR(30) NOT NULL, role enum('Administrador','Usuario') NOT NULL, PRIMARY KEY (`usuario_id`)) ENGINE = InnoDB;
 
 
-CREATE TABLE `delilahresto`.`pedidos` ( `estado` VARCHAR(30) NOT NULL , `hora` TIME(6) NOT NULL , `id_pedido` INT(200) NOT NULL AUTO_INCREMENT, `descripcion` VARCHAR(50) NOT NULL , `pago` INT(30) NOT NULL , `usuario_id` INT(200) NOT NULL , `direccion` INT(100) NOT NULL, PRIMARY KEY (`id_pedido`) ) ENGINE = InnoDB;
+CREATE TABLE `delilah_resto`.`pedidos` ( `estado` VARCHAR(30) NOT NULL , `hora` TIME(6) NOT NULL , `id_pedido` INT(200) NOT NULL AUTO_INCREMENT, `cantidad` INT(30) NOT NULL , `descripcion` VARCHAR(50) NOT NULL , `pago` INT(30) NOT NULL , `usuario` VARCHAR(30) NOT NULL , `direccion` INT(100) NOT NULL, PRIMARY KEY (`id_pedido`) ) ENGINE = InnoDB;
 
-CREATE TABLE `delilahresto`.`productos` ( `id_producto` INT(200) NOT NULL AUTO_INCREMENT , `nombre` VARCHAR(100) NOT NULL , `precio` INT(200) NOT NULL , PRIMARY KEY (`id_producto`)) ENGINE = InnoDB;
+CREATE TABLE `delilah_resto`.`productos` ( `id_producto` INT(200) NOT NULL AUTO_INCREMENT , `nombre` VARCHAR(100) NOT NULL , `precio` INT(200) NOT NULL , PRIMARY KEY (`id_producto`)) ENGINE = InnoDB;
 
-INSERT INTO usuarios (usuario_id, usuario, nombre_apellido, mail, telefono, direccion, contraseña) VALUES('NULL', 'AdministradorDelilah', "Administrado rDelilah",'admin@admin.com', '123456789', 'none', 'd3L!l4_P4sSw0rd');

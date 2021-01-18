@@ -27,11 +27,45 @@ tags:
   description: "Operacion de crear un nuevo producto"
 - name: "borrar_producto"
   description: "Operacion para borrar un producto"
-
+- name: "crear_admin"
+  description: "operacion para crear administrador"
 schemes:
 - "https"
 - "http"
 paths:
+  /crear_admin:
+     post:
+      tags:
+      - "crear_admin"
+      summary: "Crea un nuevo usuario"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      - "application/xml"
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Objeto usuario"
+        required: true
+        schema:
+          $ref: "#/definitions/administrador"
+      responses:
+        "201":
+          description: "Usuario agregado exitosamente"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "409":
+          description: "El usuario ya existe"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "500":
+          description: "Error inesperado"
+          schema: 
+            $ref: "#/definitions/status_mensaje"
   /crear_usuario:
     post:
       tags:
@@ -581,6 +615,35 @@ definitions:
         type: "string"
       mensaje:
         type: "string"
+  administrador:
+    type: "object"
+    required:
+    - "usuario_id"
+    - "usuario"
+    - "nombre_apellido"
+    - "mail"
+    - "telefono"
+    - "direccion"
+    - "contraseña"
+    properties:
+      usuario_id:
+        type: "integer"
+        format: "int64"
+      usuario:
+        type: "string"
+        example: "nombredeusuario"
+      nombre_apellido:
+        type: "string"
+      mail:
+        type: "string"
+      telefono:
+        type: "integer"
+      direccion:
+        type: "string"
+      contraseña:
+        type: "string"
+      pass_admin:
+        type: "string"
   usuario:
     type: "object"
     required:
@@ -607,4 +670,6 @@ definitions:
       direccion:
         type: "string"
       contraseña:
+        type: "string"
+      role:
         type: "string"

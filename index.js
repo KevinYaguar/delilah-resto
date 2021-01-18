@@ -1,23 +1,40 @@
+require('dotenv').config();
 const express = require("express");
-const Sequelize = require("sequelize");
 const mysql = require("mysql2");
-const path = 'mysql://root@localhost:3306/test';
-const sequelize = new Sequelize(path, {
-    operators: false
-});
+const jwt = require('jsonwebtoken');
+const expressJwt = require('express-jwt')
 const cors = require('cors');
 
-const expressJwt = require('express-jwt')
-const jwtClave = 'Pr0y3CtO_4caWik';
-require('dotenv').config();
-const jwt = require('jsonwebtoken');
+const jwtClave = process.env.CLAVE; 
+
 const app = express();
 app.use(cors());
 app.use(express.json());
 
+const {insertarUsuario, buscar_usuario, login} = require('./Users/Users.js')
+const {if_user_exists_reject, if_user_exists_next, user_pass, data_request} = require('./Users/Users-Middlewares.js')
+
+const {
+    buscar_todos_los_productos,
+    
+    
+    buscar_todos_los_usuarios,
+    buscar_producto,
+    insertar_producto,
+    insertar_pedido,
+    
+    verificar_si_existe_producto,
+
+    verificar_si_existe_delete_update_PRODUCTOS,
+    verificar_si_existe_delete_update_PEDIDOS,
+    delete_pedido,
+    autenticar_usuario_PEDIDOS,
+} = require('./funciones')
+
 
 //Middleware que solicita contraseña de administrador en todos los endpoint excepto en /usuarios
-app.use(expressJwt({ secret: jwtClave, algorithms: ['sha1', 'RS256', 'HS256'] }).unless({ path: ["/productos", "/login", "/nuevo_pedido", "/crea_usuario"] }));
+app.use(expressJwt({ secret: jwtClave, algorithms: ['sha1', 'RS256', 'HS256'] })
+    .unless({ path: ["/login", "/crear_usuario"] }));
 
 app.use(function (err, req, res, next){
     if(err.name == 'UnauthorizedError'){
@@ -28,110 +45,18 @@ app.use(function (err, req, res, next){
     
 })
 
-let verificar_si_existe = (req, res, next)=>{
-    let usuario = req.body.usuario;
-    let nombre = req.body.nombre;
-    let id_pedido = req.body.id_pedido;
-    if(usuario){
-        buscar_usuario(usuario)
-        .then(proyects => {
-            let user = proyects.find(u => u.usuario == usuario)
-            if (!user) {
-                return next();
-            } else if (user) {
-                res.status(409).send({
-                    status: 409,
-                    mensaje: 'El usuario ya existe'
-                })
-            }
-        }).catch(err => console.log(err));
-    } else if(nombre){
-        buscar_producto(nombre)
-        .then(proyects => {
-            let producto = proyects.find(p => p.nombre == nombre)
-            if (!producto) {
-                return next();
-            } else if (producto) {
-                res.status(409).send({
-                    status: 409,
-                    mensaje: 'El producto que quieres subir ya existe'
-                })
-            }
-        })
-    } else if(id_pedido){
-        buscar_pedido(id_pedido)
-        .then(proyects => {
-            let pedido = proyects.find(p => p.id_pedido == id_pedido);
-            if (!pedido) {
-                return next();
-            } else if (pedido) {
-                res.status(400).send({
-                    status: 'error',
-                    mensaje: 'el numero de pedido ya fue utilizado'
-                });
-            }
-        })
-    }
-}
-
-
-async function buscar_usuario(usuario) {
-    let resultado = await sequelize.query('SELECT * FROM usuarios WHERE usuario = ?', {
-        replacements: [usuario],
-        type: sequelize.QueryTypes.SELECT
-    });
-    return resultado;
-}
-async function login (usuario, contrasena) {
-    let resultado = await sequelize.query('SELECT * FROM usuarios WHERE usuario = ? AND contraseña = ?', {
-        replacements: [usuario, contrasena],
-        type: sequelize.QueryTypes.SELECT
-    });
-    return resultado;
-}
-
-async function buscar_todos_los_usuarios() {
-    let resultado = await sequelize.query("SELECT * FROM usuarios", {
-        type: sequelize.QueryTypes.SELECT
-    })
-    return resultado;
-}
-
 ///////////////////////////////////////////ENDPOINTS USUARIOS//////////////////////////////////////////
 
-let administrador = {
-    usuario: 'AdministradorDelilah',
-    contraseña: 'd3L!l4_P4sSw0rd'
-}
 
-app.post('/login', (req, res)=>{
+app.post('/login', data_request, if_user_exists_next, user_pass,  (req, res)=>{
     let {usuario, contraseña} = req.body;
-    if(usuario == administrador.usuario && contraseña == administrador.contraseña){
-        login(usuario, contraseña)
-            .then(proyects =>{
-                if(proyects.length == 0){
-                    res.status(400).send({status:'error', usuario: usuario, mensaje:'usuario o contraseña incorrectos'})
-                }
-                else{
-                    let token = jwt.sign({usuario: usuario}, jwtClave)
-                    let decodificado = jwt.verify(token, jwtClave)
-                    res.status(200).send({status:'OK', usuario: usuario, mensaje:'administrador logueado',  token: token})
-                }
-            })
-    } else if(usuario && contraseña){
-        login(usuario, contraseña)
-            .then(proyects =>{
-                if(proyects.length == 0){
-                    res.status(400).send({status:'error', usuario: usuario, mensaje:'usuario o contraseña incorrectos'})
-                }
-                else{
-                    res.status(200).send({status:'OK', usuario: usuario, mensaje:'usuario logueado correctamente'})
-                }
-            }).catch(err=>console.log(err));
-    }else{
-        res.status(400).send({status:'error', mensaje:'debes ingresar usuario y contraseña para el login'})
-    }
+
+        let token = jwt.sign({usuario: usuario}, jwtClave)
+        //let decodificado = jwt.verify(token, jwtClave)
+        res.status(200).send({status:'OK', usuario: usuario, mensaje:'Login success',  token: token})
+
 })
+
 
 app.get('/usuarios',  (req, res) => {
     let {usuario} = req.query;
@@ -155,72 +80,22 @@ app.get('/usuarios',  (req, res) => {
         }
 })
 
-async function insertarUsuario(usuario) {
-    let arrayUsuario = Object.values(usuario);
-    let resultado = await sequelize.query('INSERT INTO usuarios (usuario_id, usuario, nombre_apellido, mail, telefono, direccion, contraseña) VALUES (?)', {
-        replacements: [arrayUsuario]
-    });
-    return resultado;
-}
 
-app.post('/crear_usuario', verificar_si_existe, (req, res) => {
-    insertarUsuario(req.body).then(proyects => res.status(201).send({
-            status: 'OK',
-            mensaje: 'Usuario agregado exitosamente'
-        }))
-        .catch(err => console.log(err));
+app.post('/crear_usuario', if_user_exists_reject, (req, res) => {
+    let {usuario_id, usuario, nombre_apellido, mail, telefono, direccion, contraseña, role} = req.body;
+        
+        insertarUsuario(usuario_id, usuario, nombre_apellido, mail, telefono, direccion, contraseña, role)
+            .then(proyects => res.status(201).send({
+                status: 'OK',
+                mensaje: `${role} agregado exitosamente`
+            }))
+            .catch(err => console.log(err));
+        
 })
 
-//middleware VER SI EXISTE para DELETE y UPDATE usuarios
-
-let verificar_si_existe_delete_update = (req, res, next) =>{
-    let usuario = req.body.usuario;
-    let nombre = req.body.nombre;
-    let id_pedido = req.body.id_pedido;
-    if(usuario){
-        buscar_usuario(usuario)
-        .then(proyects => {
-            let user = proyects.find(u => u.usuario == usuario);
-            if (user) {
-                return next();
-            } else if (!user) {
-                res.status(404).send({
-                    status: 404,
-                    mensaje: 'El usuario ingresado no existe'
-                });
-            }
-        })
-    }else if(nombre){
-        buscar_producto(nombre)
-        .then(proyects => {
-            let product = proyects.find(p => p.nombre == nombre);
-            if (product) {
-                return next();
-            } else if (!product) {
-                res.status(404).send({
-                    status: 404,
-                    mensaje: 'El producto no existe'
-                });
-            }
-        })
-    }else if(id_pedido){
-        buscar_pedido(id_pedido)
-        .then(proyects => {
-            let pedido = proyects.find(p => p.id_pedido == id_pedido);
-            if (pedido) {
-                return next();
-            } else if (!pedido) {
-                res.status(404).send({
-                    status: 404,
-                    mensaje: 'El numero de pedido es incorrecto'
-                });
-            }
-        })
-    }
-}
 
 
-app.put('/usuarios', verificar_si_existe_delete_update, (req, res) => {
+app.put('/usuarios', (req, res) => {
     let {
         usuario,
         campo,
@@ -236,8 +111,7 @@ app.put('/usuarios', verificar_si_existe_delete_update, (req, res) => {
         .catch(err => console.log(err));
 })
 
-
-app.delete('/usuarios', verificar_si_existe_delete_update, (req, res) => {
+app.delete('/usuarios', (req, res) => {
     let {
         usuario
     } = req.body;
@@ -253,27 +127,6 @@ app.delete('/usuarios', verificar_si_existe_delete_update, (req, res) => {
 
 ///////////////////////////////////////////ENDPOINTS PRODUCTOS//////////////////////////////////////////
 
-async function buscar_producto(producto) {
-    let resultado = await sequelize.query('SELECT * FROM productos WHERE nombre = ?', {
-        type: sequelize.QueryTypes.SELECT,
-        replacements: [producto]
-    })
-    return resultado;
-}
-async function buscar_todos_los_productos() {
-    let resultado = await sequelize.query('SELECT * FROM productos', {
-        type: sequelize.QueryTypes.SELECT
-    });
-    return resultado;
-}
-
-async function insertar_producto(producto) {
-    let arrayProducto = Object.values(producto)
-    let resultado = await sequelize.query('INSERT INTO productos (id_producto, nombre, precio) VALUES (?)', {
-        replacements: [arrayProducto]
-    })
-    return resultado;
-}
 
 app.get('/productos', (req, res) => {
     let {
@@ -298,7 +151,7 @@ app.get('/productos', (req, res) => {
     }
 })
 
-app.post('/subir_producto', verificar_si_existe, (req, res) => {
+app.post('/subir_producto', verificar_si_existe_producto, (req, res) => {
 
     insertar_producto(req.body)
         .then(proyects => res.status(200).send({
@@ -308,7 +161,7 @@ app.post('/subir_producto', verificar_si_existe, (req, res) => {
 })
 
 
-app.delete('/borrar_producto', verificar_si_existe_delete_update, (req, res) => {
+app.delete('/borrar_producto', verificar_si_existe_delete_update_PRODUCTOS, (req, res) => {
     let {
         nombre
     } = req.body;
@@ -323,7 +176,7 @@ app.delete('/borrar_producto', verificar_si_existe_delete_update, (req, res) => 
 })
 
 
-app.put('/actualizar_producto', verificar_si_existe_delete_update, (req, res) => {
+app.put('/actualizar_producto', verificar_si_existe_delete_update_PRODUCTOS, (req, res) => {
     let {
         nombre,
         campo,
@@ -339,13 +192,6 @@ app.put('/actualizar_producto', verificar_si_existe_delete_update, (req, res) =>
 })
 //////////////////////////////////////////ENDPOINT PEDIDOS////////////////////////////////////////// 
 
-async function buscar_pedido(id_pedido) {
-    let resultado = await sequelize.query('SELECT * FROM pedidos WHERE id_pedido = ?', {
-        replacements: [id_pedido],
-        type: sequelize.QueryTypes.SELECT
-    });
-    return resultado;
-}
 
 app.get('/pedidos', (req, res) => {
     let {id_pedido} = req.query;
@@ -369,15 +215,8 @@ app.get('/pedidos', (req, res) => {
     }
 });
 
-async function insertar_pedido(pedido) {
-    let arrayPedido = Object.values(pedido)
-    let resultado = sequelize.query('INSERT INTO pedidos (estado, hora, id_pedido, descripcion, pago, usuario_id, direccion) VALUES (?)', {
-        replacements: [arrayPedido]
-    });
-    return resultado;
-}
 
-app.post('/nuevo_pedido', verificar_si_existe, (req, res) => {
+app.post('/nuevo_pedido', autenticar_usuario_PEDIDOS, (req, res) => {
     insertar_pedido(req.body)
         .then(proyects => res.status(200).send({
             status: 'OK',
@@ -386,7 +225,7 @@ app.post('/nuevo_pedido', verificar_si_existe, (req, res) => {
         .catch(err => console.log(err));
 })
 
-app.put('/pedidos', verificar_si_existe_delete_update, (req, res) => {
+app.put('/pedidos', verificar_si_existe_delete_update_PEDIDOS, (req, res) => {
     let {
         id_pedido,
         nuevo_estado
@@ -401,16 +240,15 @@ app.put('/pedidos', verificar_si_existe_delete_update, (req, res) => {
         .catch(err => console.log(err));
 })
 
-app.delete('/pedidos', (req, res) => {
-    let id_pedido = req.body.id_pedido;
-    sequelize.query('DELETE FROM pedidos WHERE id_pedido = ?', {
-            replacements: [id_pedido]
-        })
-        .then(proyects => res.status(200).send({
-            status: 'OK',
-            mensaje: 'Pedido eliminado con éxito'
-        }))
-        .catch(err => console.log(err));
+
+
+app.delete('/pedidos', verificar_si_existe_delete_update_PEDIDOS, (req, res) => {
+    let {id_pedido} = req.body;
+    delete_pedido(id_pedido).then(proyects => res.status(200).send({
+        status: 'OK',
+        mensaje: 'Pedido eliminado con éxito'
+    }))
+    .catch(err => console.log(err));
 })
 
 app.listen(process.env.SERVER_PORT, (req, res) => {
