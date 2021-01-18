@@ -14,7 +14,7 @@ const sequelize = new Sequelize(
 
 const jwtClave =  process.env.CLAVE; 
 
-const {buscar_usuario, login} = require('./Users')
+const {buscar_usuario, login} = require('./Users-Functions')
 
 let if_user_exists_reject = (req, res, next) => {
     let usuario = req.body.usuario;
@@ -99,8 +99,8 @@ let check_rol = (req, res, next) => {
                 })
             }
         })
-
 }
+
 
 module.exports = {
     if_user_exists_reject, 
