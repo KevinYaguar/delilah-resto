@@ -38,9 +38,7 @@ npm install sequelize
 
 Abrir XAMPP e iniciar los servicios de Apache y MYSQL
 Para abrir MYSQL presionar el botón Admin ó acceder a phpmyadmin.
-Generar la base de datos delilahresto, dentro del panle de control de la base de datos ejecutar y/o importar el archivo que se encuentra en: instrucciones_mysql.txt
-
-Dentro de index.js se encuentra el objecto "administrador" el cual tiene las propiedades usuario y contraseña. Ahi ingrese el usuario y contraseña que desee que quede guardado para las peticiones que solo son adminitas por el administrador. Solo será accedible en el script. 
+Generar la base de datos delilahresto, dentro del panel de control de la base de datos ejecutar y/o importar el archivo que se encuentra en: instrucciones_mysql.txt
 
 Documentación de la API
 Abrir el archivo swagger.yaml y copiar su contenido en Swagger o importar el mismo desde las opciones.
@@ -59,7 +57,6 @@ Nodemon
 Jsonwebtoken
 Dotenv
 Mysql
-Moment
 Cors
 
 Autor
