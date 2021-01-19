@@ -93,7 +93,7 @@ let check_rol = (req, res, next) => {
             if(user.role === 'Administrador'){
                 next();
             } else {
-                res.status(400).send({
+                res.status(403).send({
                     status:'error',
                     mensaje:'Necesitas ser administrador para realizar esta acción'
                 })

@@ -9,26 +9,12 @@ info:
 host: "localhost:3000"
 basePath: "/v2"
 tags:
-- name: "crear_usuario"
-  description: "creación de usuario"
-- name: "login"
-  description: "login"
 - name: "usuarios"
   description: "Operaciones sobre los usuarios"
 - name: "productos"
   description: "Operaciones sobre los productos"
 - name: "pedidos"
   description: "Operaciones sobre los pedidos"
-- name: "nuevo_pedido"
-  description: "Operacion de hacer un nuevo pedido"
-- name: "actualizar_producto"
-  description: "Operacion de actualizar el estado de un pedido"
-- name: "subir_producto"
-  description: "Operacion de crear un nuevo producto"
-- name: "borrar_producto"
-  description: "Operacion para borrar un producto"
-- name: "crear_admin"
-  description: "operacion para crear administrador"
 schemes:
 - "https"
 - "http"
@@ -36,7 +22,7 @@ paths:
   /crear_usuario:
     post:
       tags:
-      - "crear_usuario"
+      - "usuarios"
       summary: "Crea un nuevo usuario"
       description: ""
       operationId: ""
@@ -69,7 +55,7 @@ paths:
   /login:
     post:
       tags:
-      - "login"
+      - "usuarios"
       summary: "Login with your username and password"
       description: "Responde con el token que necesitara para realizar el resto de las operaciones"
       operationId: ""
@@ -139,15 +125,15 @@ paths:
       tags:
       - "productos"
       summary: "Obtiene todos los productos registrados"
-      description: "Para obtener todos los productos, no ingrese ningun parametro. Para obtener un producto especifico ingrese el nombre del producto con query."
+      description: "Obtiene un array de los los productos."
       operationId: ""
       produces:
       - "application/xml"
       - "application/json"
       parameters:
-      - in: "query"
-        name: "nombre"
-        description: "ingrese el nombre del producto que busca"
+      - in: "header"
+        name: "Authorization"
+        description: "Tienes que estar logueado para realizar esta accion"
         required: false
         type: "string"
       responses:
@@ -155,8 +141,6 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/array_productos"
-        "404":
-          description: "Producto no encontrado"
         "401":
           description: "UnauthorizedError"
           schema:
@@ -165,173 +149,21 @@ paths:
           description: "Error inesperado"
           schema: 
             $ref: "#/definitions/status_mensaje"
-  /nuevo_pedido:
-    post:
-      tags:
-      - "nuevo_pedido"
-      summary: "Crea un nuevo pedido"
-      description: "Crea un nuevo pedido."
-      operationId: ""
-      produces:
-      - "application/xml"
-      - "application/json"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "Crea un nuevo pedido"
-        required: true
-        schema:
-          $ref: "#/definitions/pedido"
-      responses:
-        "200":
-          description: "operacion exitosa"
-          schema:
-            $ref: "#/definitions/status_mensaje"
-        "500":
-          description: "Error inesperado"
-          schema: 
-            $ref: "#/definitions/status_mensaje"
-  /pedidos:
-    get:
-      security:
-        - Bearer: []
-      tags:
-      - "pedidos"
-      summary: "Obtiene la lista de pedidos"
-      description: "Si no ingresa un parametro obtiene la lista de pedidos, si ingresa un id_pedido(query) obtiene el pedido especificado"
-      operationId: ""
-      produces:
-      - "application/xml"
-      - "application/json"
-      parameters:
-      - in: "query"
-        name: "id_pedido"
-        type: "number"
-      responses:
-        "200":
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/array_pedidos"
-        "404":
-          description: "El usuario no existe"
-        "401":
-          description: "UnauthorizedError"
-          schema:
-            $ref: "#/definitions/status_mensaje"
-        "500":
-          description: "Error inesperado"
-          schema: 
-            $ref: "#/definitions/status_mensaje"
-    put:
-      security:
-        - Bearer: []
-      tags:
-      - "pedidos"
-      summary: "Altera el estado de un pedido "
-      description: "Ingrese el id_pedido y el nuevo estado del pedido que desee modificar."
-      operationId: ""
-      produces:
-      - "application/xml"
-      - "application/json"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: ""
-        required: true
-        schema:
-            $ref: "#/definitions/modificar_pedido"
-      responses:
-        "200":
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/status_mensaje"
-        "404":
-          description: "El numero de pedido es incorrecto"
-        "401":
-          description: "UnauthorizedError"
-          schema:
-            $ref: "#/definitions/status_mensaje"
-        "500":
-          description: "Error inesperado"
-          schema: 
-            $ref: "#/definitions/status_mensaje"
-    delete:
-      security:
-        - Bearer: []
-      tags:
-      - "pedidos"
-      summary: "Elimina un pedido"
-      description: "Elimina un pedido"
-      operationId: ""
-      produces:
-      - "application/xml"
-      - "application/json"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "Ingresa un objecto con el id del pedido"
-        required: true
-        schema:
-            $ref: "#/definitions/id_pedido"
-      responses:
-        "200":
-          description: "succesfull"
-          schema:
-            $ref: "#/definitions/status_mensaje"
-        "404":
-          description: "El pedido no existe"
-        "401":
-          description: "UnauthorizedError"
-          schema:
-            $ref: "#/definitions/status_mensaje"
-        "500":
-          description: "Error inesperado"
-          schema: 
-            $ref: "#/definitions/status_mensaje"
-  /actualizar_producto:
-    put:
-      security:
-        - Bearer: []
-      tags: 
-      - "actualizar_producto"
-      summary: "Podrás modificar el estado de un producto."
-      produces:
-      - "application/xml"
-      - "application/json"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: ""
-        required: true
-        schema:
-          $ref: "#/definitions/modificar_producto"
-      responses:
-        "200":
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/status_mensaje"
-        "400":
-          description: "Invalid Order"
-          schema:
-            $ref: "#/definitions/status_mensaje"
-        "404":
-          description: "El producto no existe"
-        "500":
-          description: "Error inesperado"
-          schema: 
-            $ref: "#/definitions/status_mensaje"  
   /subir_producto:
     post:
       security:
         - Bearer: []
       tags:
-      - "subir_producto"
+      - "productos"
       summary: "Crea un nuevo producto"
       description: "Crea un nuevo producto."
       produces:
       - "application/xml"
       - "application/json"
       parameters:
+      - in: "header"
+        name: "authorization"
+        type: "string"
       - in: "body"
         name: "body"
         description: "Ingresa un objecto con las propiedades especificadas"
@@ -347,6 +179,10 @@ paths:
           description: "UnauthorizedError"
           schema:
             $ref: "#/definitions/status_mensaje"
+        "403":
+          description: "Tienes que ser administrador para realizar esta accion"
+          schema:
+            $ref: "#/definitions/status_mensaje"
         "409":
           description: "El producto que quieres subir ya existe"
           schema:
@@ -360,7 +196,7 @@ paths:
       security:
         - Bearer: []
       tags:
-      - "borrar_producto"
+      - "productos"
       summary: "Elimina un producto"
       description: "Elimina un producto"
       operationId: ""
@@ -368,9 +204,12 @@ paths:
       - "application/xml"
       - "application/json"
       parameters:
+      - in: "header"
+        name: "authorization"
+        type: "string"
       - in: "body"
         name: "body"
-        description: "Ingrese el nombre de producto que desea eliminar en el body.nombre"
+        description: "Ingrese el nombre de producto que desea eliminar"
         required: true
         schema:
             $ref: "#/definitions/producto_get"
@@ -379,10 +218,189 @@ paths:
           description: "Producto eliminado exitosamente"
           schema:
             $ref: "#/definitions/status_mensaje"
-        "404":
-          description: "Producto no encontrado"
         "401":
           description: "UnauthorizedError"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "403":
+          description: "Tienes que ser administrador para realizar esta accion"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "404":
+          description: "El producto que indicaste no existe"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "500":
+          description: "Error inesperado"
+          schema: 
+            $ref: "#/definitions/status_mensaje"
+  /actualizar_producto:
+    put:
+      security:
+        - Bearer: []
+      tags: 
+      - "productos"
+      summary: "Podrás modificar cualquier campo de un producto."
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - in: "header"
+        name: "authorization"
+        type: "string"
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/modificar_producto"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "401":
+          description: "UnauthorizedError"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "403":
+          description: "Tienes que ser administrador para realizar esta accion"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "404":
+          description: "El producto que indicaste no existe"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "500":
+          description: "Error inesperado"
+          schema: 
+            $ref: "#/definitions/status_mensaje" 
+  /pedidos:
+    get:
+      security:
+        - Bearer: []
+      tags:
+      - "pedidos"
+      summary: "Obtiene la lista de pedidos"
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - in: "header"
+        name: "authorization"
+        type: "string"
+      - in: "query"
+        name: "id_pedido"
+        type: "number"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/array_pedidos"
+        "401":
+          description: "UnauthorizedError"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "403":
+          description: "Tienes que ser administrador para realizar esta accion"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "500":
+          description: "Error inesperado"
+          schema: 
+            $ref: "#/definitions/status_mensaje"
+  /my_order:
+    get:
+      security:
+        - Bearer: []
+      tags:
+      - "pedidos"
+      summary: "Obtiene la lista de los pedidos del usuario que hace el request"
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - in: "header"
+        name: "authorization"
+        type: "string"
+      - in: "query"
+        name: "id_pedido"
+        type: "number"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/array_pedidos"
+        "401":
+          description: "UnauthorizedError"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "500":
+          description: "Error inesperado"
+          schema: 
+            $ref: "#/definitions/status_mensaje"
+  /nuevo_pedido:
+    post:
+      tags:
+      - "pedidos"
+      summary: "Crea un nuevo pedido"
+      description: "Crea un nuevo pedido."
+      operationId: ""
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - in: "header"
+        name: "authorization"
+        type: "string"
+      - in: "body"
+        name: "body"
+        description: "Crea un nuevo pedido"
+        required: true
+        schema:
+          $ref: "#/definitions/pedido"
+      responses:
+        "200":
+          description: "operacion exitosa"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "401":
+          description: "UnauthorizedError"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "500":
+          description: "Error inesperado"
+          schema: 
+            $ref: "#/definitions/status_mensaje"
+  /update_state:
+    put:
+      tags:
+      - "pedidos"
+      summary: "Actualiza el estado de un pedido"
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - in: "header"
+        name: "authorization"
+        type: "string"
+      - in: "body"
+        name: "body"
+        description: "Ingresa el numero de pedido y el nuevo estado"
+        required: true
+        schema:
+          $ref: "#/definitions/pedido_update"
+      responses:
+        "200":
+          description: "operacion exitosa"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "401":
+          description: "UnauthorizedError"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "403":
+          description: "Tienes que ser administrador para realizar esta accion"
           schema:
             $ref: "#/definitions/status_mensaje"
         "500":
@@ -420,18 +438,6 @@ definitions:
             type: "string"
           precio:
             type: "integer"
-  id_pedido:
-    type: "object"
-    properties:
-      id_pedido:
-        type: "string"
-  modificar_pedido:
-      type: "object"
-      properties:
-        id_pedido:
-          type: "string"
-        nuevo_estado:
-          type: "string"
   array_pedidos:
     type: "array"
     items:
@@ -476,28 +482,16 @@ definitions:
         type: "integer"
       id_pedido: 
         type: "integer"
+      cantidad: 
+        type: "string"
       descripcion: 
         type: "string"
       pago: 
         type: "integer"
-      usuario_id: 
-        type: "integer"
       direccion: 
         type: "string"
-  usuario_put:
-    type: "object"
-    properties:
-      usuario:
-        type: "string"
-      campo:
-        type: "string"
-      nuevo_valor:
-        type: "string"
-  usuario_get:
-    type: "object"
-    properties:
-      usuario:
-        type: "string"
+      usuario: 
+        type: "integer"
   usuario_login_res:
     type: "object"
     properties:
@@ -515,36 +509,6 @@ definitions:
       usuario:
         type: "string"
       contraseña:
-        type: "string"
-      
-  administrador:
-    type: "object"
-    required:
-    - "usuario_id"
-    - "usuario"
-    - "nombre_apellido"
-    - "mail"
-    - "telefono"
-    - "direccion"
-    - "contraseña"
-    properties:
-      usuario_id:
-        type: "integer"
-        format: "int64"
-      usuario:
-        type: "string"
-        example: "nombredeusuario"
-      nombre_apellido:
-        type: "string"
-      mail:
-        type: "string"
-      telefono:
-        type: "integer"
-      direccion:
-        type: "string"
-      contraseña:
-        type: "string"
-      pass_admin:
         type: "string"
   usuario:
     type: "object"
@@ -574,4 +538,11 @@ definitions:
       contraseña:
         type: "string"
       role:
+        type: "string"
+  pedido_update:
+    type: "object"
+    properties:
+      id_pedido:
+        type: "string"
+      nuevo_estado:
         type: "string"

@@ -40,7 +40,7 @@ let if_product_exists_next = (req, res, next) => {
         .then(proyects => {
             let producto = proyects.find(p => p.nombre == nombre)
             if (!producto) {
-                res.status(409).send({
+                res.status(404).send({
                     status: 404,
                     mensaje: 'El producto que indicaste no existe'
                 })
