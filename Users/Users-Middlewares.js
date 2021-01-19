@@ -49,6 +49,18 @@ let if_user_exists_next = (req, res, next) => {
             })
 }
 
+let role_correction = (req, res, next) => {
+    let {role} = req.body;
+    if(role === 'Administrador' || role === 'Usuario'){
+        next();
+    } else{
+        res.status(409).send({
+            status:'error',
+            mensaje:'El campo role solo acepta los términos Administrador o Usuario'
+        })
+    }
+}
+
 let user_pass = (req, res, next) => {
     let {usuario, contraseña} = req.body;
     login(usuario, contraseña)
@@ -95,7 +107,7 @@ let check_rol = (req, res, next) => {
             } else {
                 res.status(403).send({
                     status:'error',
-                    mensaje:'Necesitas ser administrador para realizar esta acción'
+                    mensaje:'Necesitas ser Administrador para realizar esta acción'
                 })
             }
         })
@@ -104,6 +116,7 @@ let check_rol = (req, res, next) => {
 
 module.exports = {
     if_user_exists_reject, 
+    role_correction,
     if_user_exists_next,
     user_pass,
     data_request,

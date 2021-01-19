@@ -17,6 +17,7 @@ const {
     } = require('./Users/Users-Functions.js')
 const {
     if_user_exists_reject,
+    role_correction,
     if_user_exists_next, 
     user_pass, data_request, 
     check_rol
@@ -52,7 +53,7 @@ app.use(function (err, req, res, next){
 
 ///////////////////////////////////////////ENDPOINTS USUARIOS//////////////////////////////////////////
 
-app.post('/crear_usuario', if_user_exists_reject, (req, res) => {
+app.post('/crear_usuario', if_user_exists_reject, role_correction, (req, res) => {
     let {usuario_id, usuario, nombre_apellido, mail, telefono, direccion, contraseña, role} = req.body;
         
     insertarUsuario(usuario_id, usuario, nombre_apellido, mail, telefono, direccion, contraseña, role)
@@ -90,9 +91,6 @@ app.get('/usuarios', (req, res) => {
         })
 })
 
-
-
-
 ///////////////////////////////////////////ENDPOINTS PRODUCTOS//////////////////////////////////////////
 
 
@@ -113,7 +111,6 @@ app.post('/subir_producto', check_rol,if_product_exists_reject, (req, res) => {
         })).catch(err => console.log(err));
 })
 
-
 app.delete('/borrar_producto', check_rol, if_product_exists_next, (req, res) => {
     let {
         nombre
@@ -126,7 +123,6 @@ app.delete('/borrar_producto', check_rol, if_product_exists_next, (req, res) => 
             })          
         }).catch(err => console.log(err));
 })
-
 
 app.put('/actualizar_producto', check_rol,if_product_exists_next, (req, res) => {
     let {nombre, campo, nuevo_valor} = req.body;
@@ -160,7 +156,13 @@ app.get('/my_order', (req, res)=>{
 
     buscar_pedido(usuario)
         .then(responses => {
-            res.status(200).send(responses)
+            if(responses.length === 0){
+                res.status(200).send({
+                    mensaje:'Aun no has hecho ningún pedido, animate a hacer uno!'
+                })
+            } else{
+                res.status(200).send(responses)
+            }
         })
         .catch(err=> console.log(err))
 
@@ -197,6 +199,7 @@ app.put('/update_state', check_rol, (req, res) => {
         .catch(err => console.log(err));
 })
 
+////////////////////////////MIDDLEWARES GLOBALES////////////////////
 
 app.listen(process.env.SERVER_PORT, (req, res) => {
     console.log('Servidor corriendo en el puerto 3000');

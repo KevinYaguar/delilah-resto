@@ -24,7 +24,7 @@ paths:
       tags:
       - "usuarios"
       summary: "Crea un nuevo usuario"
-      description: ""
+      description: "Deberá especificar el role del usuario que se esta creando. Solo acepta 'Usuario' o 'Administrador'."
       operationId: ""
       consumes:
       - "application/json"
