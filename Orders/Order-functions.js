@@ -60,7 +60,8 @@ async function update_state (id_pedido, estado){
 }
 
 async function delete_order (id_pedido){
-    let resultado = sequelize.query(`DELETE * FROM pedidos WHERE id_pedido = ?`, {
+    let resultado = sequelize.query(`SET FOREIGN_KEY_CHECKS = 0; DELETE FROM pedidos WHERE id_pedido = ${id_pedido}; SET FOREIGN_KEY_CHECKS = 1;
+    `, {
         replacements: [id_pedido]
     })
     return resultado;

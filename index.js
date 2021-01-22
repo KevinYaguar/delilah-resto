@@ -58,9 +58,9 @@ app.use(function (err, req, res, next){
 ///////////////////////////////////////////ENDPOINTS USUARIOS//////////////////////////////////////////
 
 app.post('/crear_usuario', if_user_exists_reject, role_correction, (req, res) => {
-    let {usuario_id, usuario, nombre_apellido, mail, telefono, direccion, contraseña, role} = req.body;
+    let {usuario_id, usuario, nombre_apellido, mail, telefono, direccion, password, role} = req.body;
         
-    insertarUsuario(usuario_id, usuario, nombre_apellido, mail, telefono, direccion, contraseña, role)
+    insertarUsuario(usuario_id, usuario, nombre_apellido, mail, telefono, direccion, password, role)
         .then(responses => res.status(201).send({
                 status: 'OK',
                 mensaje: `${role} agregado exitosamente`
@@ -169,7 +169,7 @@ app.get('/my_order', (req, res)=>{
         buscar_pedido(userId)
         .then(responses => {
             if(responses.length === 0){
-                res.status(200).send({
+                res.status(404).send({
                     mensaje:'Aun no has hecho ningún pedido, animate a hacer uno!'
                 })
             } else{
@@ -205,14 +205,15 @@ app.put('/update_state', check_rol, valid_state, (req, res) => {
         estado
     } = req.body;
    
-    update_state(id_pedido, estado).then(responses => res.status(200).send({
+    update_state(id_pedido, estado).then(responses => 
+        res.status(200).send({
             status: 'OK',
             mensaje: 'Modificacion realizada'
         }))
         .catch(err => console.log(err));
 })
 
-app.delete('/delete_order', (req, res)=>{
+app.delete('/delete_order', check_rol, (req, res)=>{
     let {id_pedido} = req.body;
     delete_order(id_pedido)
         .then(responses =>{
@@ -220,7 +221,7 @@ app.delete('/delete_order', (req, res)=>{
                 status:'ok', 
                 mensaje:'Pedido eliminado exitosamente'
             })
-        })
+        }).catch(err => console.log(err));
 })
 
 ////////////////////////////MIDDLEWARES GLOBALES////////////////////

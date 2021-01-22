@@ -16,3 +16,4 @@ CREATE TABLE `delilah_resto`.`DETALLES` ( `id_pedido` INT(10) NOT NULL , `precio
 ALTER TABLE `DETALLES` ADD CONSTRAINT `FK_detalles_productos` FOREIGN KEY (`id_producto`) REFERENCES `PRODUCTOS` (`id_producto`);
 ALTER TABLE `DETALLES` ADD CONSTRAINT `FK_detalles_pedidos` FOREIGN KEY (`id_pedido`) REFERENCES `PEDIDOS` (`id_pedido`);
 
+ALTER TABLE `pedidos` CHANGE `fecha` `fecha` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP; 

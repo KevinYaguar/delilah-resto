@@ -12,7 +12,10 @@ const sequelize = new Sequelize(
         }
 });
 
+const jwt = require('jsonwebtoken');
+
 const jwtClave =  process.env.CLAVE; 
+
 
 const {buscar_usuario, login} = require('./Users-Functions')
 
@@ -31,7 +34,6 @@ let if_user_exists_reject = (req, res, next) => {
             }
         }).catch(err => console.log(err));
 }
-
 
 let if_user_exists_next = (req, res, next) => {
     let {usuario} = req.body;
@@ -89,7 +91,7 @@ let data_request = (req, res, next) => {
     }
 }
 
-const jwt = require('jsonwebtoken');
+
 
 let check_rol = (req, res, next) => {
 

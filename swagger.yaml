@@ -331,6 +331,10 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/array_pedidos"
+        "404":
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/no_orders"
         "401":
           description: "UnauthorizedError"
           schema:
@@ -407,12 +411,57 @@ paths:
           description: "Error inesperado"
           schema: 
             $ref: "#/definitions/status_mensaje"
+  /delete_order:
+    delete:
+      tags:
+      - "pedidos"
+      summary: "Eliminar un pedido"
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - in: "header"
+        name: "authorization"
+        type: "string"
+      - in: "body"
+        name: "body"
+        description: "Ingresa el numero de pedido"
+        required: true
+        schema:
+          $ref: "#/definitions/delete_order"
+      responses:
+        "200":
+          description: "operacion exitosa"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "401":
+          description: "UnauthorizedError"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "403":
+          description: "Tienes que ser administrador para realizar esta accion"
+          schema:
+            $ref: "#/definitions/status_mensaje"
+        "500":
+          description: "Error inesperado"
+          schema: 
+            $ref: "#/definitions/status_mensaje"
 securityDefinitions:
   Bearer:
     type: apiKey
     name: Authorization
     in: header  
 definitions:
+  delete_order:
+    type: "object"
+    properties:
+      id_pedido:
+        type: "integer"
+  no_orders:
+    type: "object"
+    properties:
+      mensaje: 
+        type: "string"
   producto_get:
       type: "object"
       properties:
@@ -443,20 +492,28 @@ definitions:
     items:
       type: "object"
       properties:
-        estado:
+        id_pedido:
+          type: "integer"
+        estado: 
           type: "string"
-        hora: 
-          type: "integer"
-        id_pedido: 
-          type: "integer"
-        descripcion: 
-          type: "string"
-        pago: 
-          type: "integer"
         usuario_id: 
           type: "integer"
+        fecha: 
+          type: "string"
+        pago: 
+          type: "string"
         direccion: 
           type: "string"
+        precio_unitario: 
+          type: "integer"
+        id_producto: 
+          type: "integer"
+        cantidad: 
+          type: "integer"
+        nombre: 
+          type: "string"
+        precio: 
+          type: "integer"
   modificar_producto:
       type: "object"
       properties:
@@ -476,22 +533,27 @@ definitions:
   pedido:
     type: "object"
     properties:
-      estado:
-        type: "string"
-      hora: 
+      id_pedido:
         type: "integer"
-      id_pedido: 
+      estado: 
+        type: "string"
+      usuario_id: 
         type: "integer"
-      cantidad: 
-        type: "string"
-      descripcion: 
-        type: "string"
       pago: 
-        type: "integer"
+        type: "string"
       direccion: 
         type: "string"
-      usuario: 
-        type: "integer"
+      detalles:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            id_producto:
+              type: "integer"
+            cantidad:
+              type: "integer"
+            precio_unitario:
+              type: "integer"
   usuario_login_res:
     type: "object"
     properties:
@@ -508,7 +570,7 @@ definitions:
     properties:
       usuario:
         type: "string"
-      contraseña:
+      password:
         type: "string"
   usuario:
     type: "object"
@@ -535,7 +597,7 @@ definitions:
         type: "integer"
       direccion:
         type: "string"
-      contraseña:
+      password:
         type: "string"
       role:
         type: "string"
@@ -544,5 +606,5 @@ definitions:
     properties:
       id_pedido:
         type: "string"
-      nuevo_estado:
+      estado:
         type: "string"
