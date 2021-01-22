@@ -62,10 +62,10 @@ let role_correction = (req, res, next) => {
 }
 
 let user_pass = (req, res, next) => {
-    let {usuario, contraseña} = req.body;
-    login(usuario, contraseña)
+    let {usuario, password} = req.body;
+    login(usuario, password)
         .then(proyects => {
-            let user = proyects.find(u => u.usuario == usuario && u.contraseña == contraseña)
+            let user = proyects.find(u => u.usuario == usuario && u.password == password)
             if (user) {
                 return next();
             } else if (!user) {
@@ -78,13 +78,13 @@ let user_pass = (req, res, next) => {
 }
 
 let data_request = (req, res, next) => {
-    let {usuario, contraseña} = req.body;
-    if(usuario && contraseña){
+    let {usuario, password} = req.body;
+    if(usuario && password){
         next();
     } else{
         res.status(404).send({
             status:'error',
-            mensaje:'Debes ingresar un usuario y contraseña para loguearte'
+            mensaje:'Debes ingresar un usuario y password para loguearte'
         })
     }
 }

@@ -31,14 +31,18 @@ const {
 } = require('./Products/Products-functions.js')
 
 const {
-    if_product_exists_next, if_product_exists_reject
+    if_product_exists_next, if_product_exists_reject, campo_valido
 } = require('./Products/Products-Middlewares.js')
 
 const {get_all_orders,
     update_state,
     buscar_pedido,
-    insertar_pedido} = require('./Orders/Order-functions')
+    insertar_pedido,
+    delete_order,
 
+} = require('./Orders/Order-functions')
+
+const {valid_state} = require('./Orders/Order-Middleware')
     
 app.use(expressJwt({ secret: jwtClave, algorithms: ['sha1', 'RS256', 'HS256'] })
     .unless({ path: ["/login", "/crear_usuario"] }));
@@ -124,7 +128,7 @@ app.delete('/borrar_producto', check_rol, if_product_exists_next, (req, res) => 
         }).catch(err => console.log(err));
 })
 
-app.put('/actualizar_producto', check_rol,if_product_exists_next, (req, res) => {
+app.put('/actualizar_producto', check_rol, if_product_exists_next, campo_valido, (req, res) => {
     let {nombre, campo, nuevo_valor} = req.body;
 
     update_product(nombre, campo, nuevo_valor)
@@ -141,10 +145,13 @@ app.put('/actualizar_producto', check_rol,if_product_exists_next, (req, res) => 
 app.get('/pedidos', check_rol, (req, res) => {
 
     get_all_orders()
-        .then(responses => 
-            res.status(200).send(responses))
-            .catch(err => console.log(err));
+        .then(responses => {
+            
 
+            res.status(200).send(responses)
+            
+            })
+            .catch(err => console.log(err))
 });
 
 app.get('/my_order', (req, res)=>{
@@ -154,7 +161,12 @@ app.get('/my_order', (req, res)=>{
 
     const usuario = decodificado.usuario;
 
-    buscar_pedido(usuario)
+    buscar_usuario(usuario)
+    .then(arrayUsuarios =>{
+        let user = arrayUsuarios.find(u => u.usuario == usuario)
+        userId = user.usuario_id;
+
+        buscar_pedido(userId)
         .then(responses => {
             if(responses.length === 0){
                 res.status(200).send({
@@ -165,11 +177,11 @@ app.get('/my_order', (req, res)=>{
             }
         })
         .catch(err=> console.log(err))
-
+    })
 })
 
 
-app.post('/nuevo_pedido', (req, res) => {
+app.post('/nuevo_pedido', valid_state,(req, res) => {
     
     let token = (req.headers.authorization).split(' ')[1];
     
@@ -179,6 +191,7 @@ app.post('/nuevo_pedido', (req, res) => {
 
     insertar_pedido(req.body, usuario)
         .then(responses => 
+            
             res.status(200).send({
             status: 'OK',
             mensaje: 'Pedido agregado exitosamente'
@@ -186,17 +199,28 @@ app.post('/nuevo_pedido', (req, res) => {
         .catch(err => console.log(err));
 })
 
-app.put('/update_state', check_rol, (req, res) => {
+app.put('/update_state', check_rol, valid_state, (req, res) => {
     let {
         id_pedido,
-        nuevo_estado
+        estado
     } = req.body;
    
-    update_state(id_pedido, nuevo_estado).then(responses => res.status(200).send({
+    update_state(id_pedido, estado).then(responses => res.status(200).send({
             status: 'OK',
             mensaje: 'Modificacion realizada'
         }))
         .catch(err => console.log(err));
+})
+
+app.delete('/delete_order', (req, res)=>{
+    let {id_pedido} = req.body;
+    delete_order(id_pedido)
+        .then(responses =>{
+            res.status(200).send({
+                status:'ok', 
+                mensaje:'Pedido eliminado exitosamente'
+            })
+        })
 })
 
 ////////////////////////////MIDDLEWARES GLOBALES////////////////////

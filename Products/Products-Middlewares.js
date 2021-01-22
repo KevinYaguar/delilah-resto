@@ -51,7 +51,21 @@ let if_product_exists_next = (req, res, next) => {
         })
 }
 
+const campo_valido = (req, res, next) => {
+    let {campo} = req.body;
+    if(campo === 'nombre' || campo === 'precio'){
+        next();
+    } else{
+        res.status(409).send({
+            status:'error',
+            mensaje:'Los terminos válidos para campo son "nombre" o "precio"'
+        })
+    }
+
+}
+
 module.exports = {
     if_product_exists_next,
-    if_product_exists_reject
+    if_product_exists_reject,
+    campo_valido
 }

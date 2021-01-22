@@ -14,14 +14,14 @@ const sequelize = new Sequelize(
 
 async function insertarUsuario(usuario_id, usuario, nombre_apellido, mail, telefono, direccion, contraseña, role) {
     
-    let resultado = await sequelize.query('INSERT INTO usuarios (usuario_id, usuario, nombre_apellido, mail, telefono, direccion, contraseña, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', {
+    let resultado = await sequelize.query('INSERT INTO USUARIOS (usuario_id, usuario, nombre_apellido, mail, telefono, direccion, password, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', {
         replacements: [usuario_id, usuario, nombre_apellido, mail, telefono, direccion, contraseña, role]
     });
     return resultado;
 }
 
 async function buscar_usuario(usuario) {
-    let resultado = await sequelize.query('SELECT * FROM usuarios WHERE usuario = ?', {
+    let resultado = await sequelize.query('SELECT * FROM USUARIOS WHERE usuario = ?', {
         replacements: [usuario],
         type: sequelize.QueryTypes.SELECT
     });
@@ -29,7 +29,7 @@ async function buscar_usuario(usuario) {
 }
 
 async function login(usuario, contrasena) {
-    let resultado = await sequelize.query('SELECT * FROM usuarios WHERE usuario = ? AND contraseña = ?', {
+    let resultado = await sequelize.query('SELECT * FROM USUARIOS WHERE usuario = ? AND password = ?', {
         replacements: [usuario, contrasena],
         type: sequelize.QueryTypes.SELECT
     });
@@ -37,7 +37,7 @@ async function login(usuario, contrasena) {
 }
 
 async function buscar_todos_los_usuarios() {
-    let resultado = await sequelize.query("SELECT * FROM usuarios", {
+    let resultado = await sequelize.query("SELECT * FROM USUARIOS", {
         type: sequelize.QueryTypes.SELECT
     })
     return resultado;
