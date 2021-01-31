@@ -11,7 +11,7 @@ ALTER TABLE `pedidos` ADD CONSTRAINT `FK_pedidos_usuarios` FOREIGN KEY (`usuario
 CREATE TABLE `delilah_resto`.`PRODUCTOS` ( `id_producto` INT(10) NOT NULL AUTO_INCREMENT , `nombre` VARCHAR(100) NOT NULL , `precio` INT(10) NOT NULL , PRIMARY KEY (`id_producto`)) ENGINE = InnoDB;
 
 
-CREATE TABLE `delilah_resto`.`DETALLES` ( `id_pedido` INT(10) NOT NULL , `precio_unitario` INT(10) NOT NULL , `id_producto` INT(10) NOT NULL , `cantidad` INT(10) NOT NULL , PRIMARY KEY (`id_pedido`, `precio_unitario`, `producto`)) ENGINE = InnoDB;
+CREATE TABLE `delilah_resto`.`DETALLES` ( `id_pedido` INT(10) NOT NULL , `precio_unitario` INT(10) NOT NULL , `id_producto` INT(10) NOT NULL , `cantidad` INT(10) NOT NULL , PRIMARY KEY (`id_pedido`, `precio_unitario`, `id_producto`)) ENGINE = InnoDB;
 
 ALTER TABLE `DETALLES` ADD CONSTRAINT `FK_detalles_productos` FOREIGN KEY (`id_producto`) REFERENCES `PRODUCTOS` (`id_producto`);
 ALTER TABLE `DETALLES` ADD CONSTRAINT `FK_detalles_pedidos` FOREIGN KEY (`id_pedido`) REFERENCES `PEDIDOS` (`id_pedido`);

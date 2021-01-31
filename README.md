@@ -23,7 +23,7 @@ Despliegue
 1) Clonar el proyecto
     Clonar el repositorio desde github accediendo al link: https://github.com/KevinYaguar/delilah-resto.git
     Desde la consola ejecutar el comando:
-    git clone https://github.com/seba365/DelilahResto.git
+    git clone https://github.com/KevinYaguar/delilah-resto.git
 
 2) Instalar dependencias:
 npm install cors
